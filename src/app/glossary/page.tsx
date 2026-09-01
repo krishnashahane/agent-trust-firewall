@@ -1,7 +1,12 @@
 import { PageHeader } from "@/components/PageHeader";
 import { Glossary, type Term } from "@/components/Glossary";
 
-export const metadata = { title: "Glossary — Agent Trust Firewall" };
+export const metadata = {
+  title: "Glossary",
+  description: "Every security term this product uses, explained in plain language first.",
+  alternates: { canonical: "/glossary" },
+  openGraph: { title: "Glossary · Agent Trust Firewall", description: "Every security term this product uses, explained in plain language first.", url: "/glossary" },
+};
 
 /**
  * Every piece of jargon this product uses, explained the way you would explain

@@ -163,7 +163,7 @@ export function AuditView() {
               </span>
               <span className="text-[12px] text-[var(--text-muted)]">
                 <Counter value={length} /> record{length === 1 ? "" : "s"} written since
-                boot
+                this server instance started
               </span>
             </div>
           )}
@@ -228,7 +228,7 @@ export function AuditView() {
 
       <Panel
         title="Audit records"
-        caption="Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability."
+        caption="Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability. Storage is in-memory, so this log starts fresh whenever the server goes cold."
       >
         {error ? (
           <EmptyState

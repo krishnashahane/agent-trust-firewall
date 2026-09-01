@@ -81,7 +81,7 @@ export function AgentsView() {
   return (
     <Panel
       title="Enrolled agents"
-      caption="Every agent the firewall knows about. Trust is the inverse of recent risk; the intel chip reports what public threat intelligence says about the address each one calls from."
+      caption="These six agents are synthetic demo actors — but their keys, proofs, verdicts and origin addresses are real, and the intel chip reports what public threat intelligence says about each address right now."
     >
       {error ? (
         <EmptyState

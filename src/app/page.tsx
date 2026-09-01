@@ -5,6 +5,10 @@ import { Button } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
 const PROBLEM = [
   {
     n: "01",
@@ -256,12 +260,15 @@ export default function OverviewPage() {
                   calls that pass through the interceptor.
                 </li>
                 <li>
-                  Storage is in-process, so history resets when the server goes cold.
+                  Storage is in-process, so the traffic feed and audit log start fresh
+                  whenever the server goes cold. Nothing on this site claims otherwise.
                   The storage layer is an interface; a database drops in behind it.
                 </li>
                 <li>
                   The agents in the demo fleet are synthetic. Their keys, proofs,
-                  verdicts and the intel on their origin addresses are not.
+                  verdicts and origin addresses are real — the addresses are live
+                  cloud hosts, and the intel shown about them is fetched at request
+                  time, so you can check any of it yourself.
                 </li>
                 <li>
                   A firewall must read a request to score it, so ATF is a trusted

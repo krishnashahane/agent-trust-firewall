@@ -3,12 +3,46 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileNav, Nav } from "@/components/Nav";
+import { SiteFooter, GITHUB_PROFILE } from "@/components/SiteFooter";
 import "./globals.css";
 
+const SITE = "https://agentwall-pbl.vercel.app";
+const DESCRIPTION =
+  "A firewall for AI agents. It proves who is calling — cryptographically — scores the request against live threat intelligence, and blocks rogue agent calls before they run.";
+
 export const metadata: Metadata = {
-  title: "Agent Trust Firewall",
-  description:
-    "A firewall for AI agents. It proves who is calling — cryptographically — scores the request against live threat intelligence, and blocks rogue agent calls before they run.",
+  // metadataBase makes every relative OG/canonical URL absolute, which is what
+  // Slack, X and LinkedIn require to resolve a preview at all.
+  metadataBase: new URL(SITE),
+  title: {
+    default: "Agent Trust Firewall",
+    template: "%s · Agent Trust Firewall",
+  },
+  description: DESCRIPTION,
+  applicationName: "Agent Trust Firewall",
+  authors: [{ name: "Krishna Shahane", url: GITHUB_PROFILE }],
+  creator: "Krishna Shahane",
+  keywords: [
+    "AI agent security",
+    "MCP",
+    "zero-knowledge proof",
+    "agent firewall",
+    "threat intelligence",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Agent Trust Firewall",
+    title: "Agent Trust Firewall",
+    description: DESCRIPTION,
+    url: SITE,
+    locale: "en_GB",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Agent Trust Firewall",
+    description: DESCRIPTION,
+  },
   robots: { index: true, follow: true },
 };
 
@@ -69,14 +103,7 @@ export default async function RootLayout({
 
         <div id="main">{children}</div>
 
-        <footer className="mt-20 border-t border-[var(--border)]">
-          <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6">
-            <p className="text-[12px] leading-relaxed text-[var(--text-faint)]">
-              Every verdict on this site was produced by the live engine, and every
-              external finding by a live third-party lookup. Nothing is pre-recorded.
-            </p>
-          </div>
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );

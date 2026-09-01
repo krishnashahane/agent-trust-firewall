@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Agent Trust Firewall">
+  <rect width="32" height="32" rx="7" fill="#0d0f14"/>
+  <path d="M16 5.5 7.5 9v8.2c0 5.9 3.6 10.6 8.5 12 4.9-1.4 8.5-6.1 8.5-12V9L16 5.5Z"
+        fill="none" stroke="#2f5cff" stroke-width="2.1" stroke-linejoin="round"/>
+  <path d="M11.9 16.4l3 3 5.4-5.7" fill="none" stroke="#2f5cff" stroke-width="2.3"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

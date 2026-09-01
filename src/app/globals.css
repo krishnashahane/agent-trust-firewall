@@ -334,6 +334,19 @@ hr {
   }
 }
 
+/* Draws a path on rather than popping it in. Paired with pathLength=1 so the
+ * dash maths is independent of the actual path length. */
+@keyframes atf-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
 @keyframes atf-shimmer {
   from {
     background-position: -180% 0;

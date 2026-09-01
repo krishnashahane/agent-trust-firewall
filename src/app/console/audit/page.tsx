@@ -2,7 +2,12 @@ import { AuditView } from "@/components/AuditView";
 import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Audit — Agent Trust Firewall" };
+export const metadata = {
+  title: "Audit",
+  description: "The hash-chained audit log. Try to forge a record and watch the integrity check catch it.",
+  alternates: { canonical: "/console/audit" },
+  openGraph: { title: "Audit · Agent Trust Firewall", description: "The hash-chained audit log. Try to forge a record and watch the integrity check catch it.", url: "/console/audit" },
+};
 
 export default function AuditPage() {
   return (

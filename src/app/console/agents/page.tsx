@@ -2,7 +2,12 @@ import { AgentsView } from "@/components/AgentsView";
 import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Agents — Agent Trust Firewall" };
+export const metadata = {
+  title: "Agents",
+  description: "The enrolled agent fleet, their capabilities, trust scores and live threat intelligence.",
+  alternates: { canonical: "/console/agents" },
+  openGraph: { title: "Agents · Agent Trust Firewall", description: "The enrolled agent fleet, their capabilities, trust scores and live threat intelligence.", url: "/console/agents" },
+};
 
 export default function AgentsPage() {
   return (

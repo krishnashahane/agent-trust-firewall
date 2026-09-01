@@ -5,7 +5,12 @@ import { SealedFieldDemo } from "@/components/SealedFieldDemo";
 import { Skeleton } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Attack range — Agent Trust Firewall" };
+export const metadata = {
+  title: "Attack range",
+  description: "Run real adversaries at the firewall — forged keys, replayed proofs, capability escalation.",
+  alternates: { canonical: "/console/attack-range" },
+  openGraph: { title: "Attack range · Agent Trust Firewall", description: "Run real adversaries at the firewall — forged keys, replayed proofs, capability escalation.", url: "/console/attack-range" },
+};
 
 export default function AttackRangePage() {
   return (

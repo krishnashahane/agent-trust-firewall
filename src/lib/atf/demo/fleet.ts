@@ -25,9 +25,18 @@ export interface DemoAgentSpec {
    * addresses is hardcoded — if GreyNoise or Shodan change their assessment,
    * this product's verdicts change with them.
    *
-   * The well-known resolvers below are used for the healthy fleet precisely
-   * because they are unambiguously benign infrastructure; the hostile origins
-   * used by the attack range live in scenarios.ts.
+   * These are cloud-hosting egress addresses — the kind of infrastructure an
+   * agent fleet would genuinely run on. An earlier version used well-known
+   * public DNS resolvers (8.8.8.8, 9.9.9.9), which any technical visitor spots
+   * instantly as implausible agent egress and which undercut the live-data
+   * claim made everywhere else on the site.
+   *
+   * Reserved documentation ranges (RFC 5737 TEST-NET) were considered and
+   * rejected: they are not routable, so every provider returns "no record" for
+   * them, and the intel feature would be permanently inert and unverifiable.
+   * Real routable addresses are what make the lookups checkable by a reader.
+   *
+   * The hostile origins used by the attack range live in scenarios.ts.
    */
   originIp: string;
 }
@@ -35,7 +44,7 @@ export interface DemoAgentSpec {
 export const FLEET: readonly DemoAgentSpec[] = [
   {
     agentId: "booking-concierge",
-    originIp: "1.1.1.1",
+    originIp: "165.227.34.71",
     displayName: "Booking Concierge",
     capabilities: ["calendar:*", "search:query", "email:send"],
     routine: [
@@ -46,7 +55,7 @@ export const FLEET: readonly DemoAgentSpec[] = [
   },
   {
     agentId: "payments-runner",
-    originIp: "8.8.8.8",
+    originIp: "51.15.44.7",
     displayName: "Payments Runner",
     capabilities: ["payments:charge", "payments:refund", "identity:lookup"],
     routine: [
@@ -56,7 +65,7 @@ export const FLEET: readonly DemoAgentSpec[] = [
   },
   {
     agentId: "research-scout",
-    originIp: "9.9.9.9",
+    originIp: "45.63.10.22",
     displayName: "Research Scout",
     capabilities: ["search:query", "storage:read", "weather:lookup"],
     routine: [
@@ -67,7 +76,7 @@ export const FLEET: readonly DemoAgentSpec[] = [
   },
   {
     agentId: "ops-deployer",
-    originIp: "8.8.4.4",
+    originIp: "116.203.19.44",
     displayName: "Ops Deployer",
     capabilities: ["code:review", "storage:read"],
     routine: [
@@ -77,7 +86,7 @@ export const FLEET: readonly DemoAgentSpec[] = [
   },
   {
     agentId: "support-triage",
-    originIp: "1.0.0.1",
+    originIp: "172.105.66.19",
     displayName: "Support Triage",
     capabilities: ["email:send", "search:query", "identity:lookup"],
     routine: [
@@ -87,7 +96,7 @@ export const FLEET: readonly DemoAgentSpec[] = [
   },
   {
     agentId: "inventory-sync",
-    originIp: "208.67.222.222",
+    originIp: "159.65.20.14",
     displayName: "Inventory Sync",
     capabilities: ["storage:read", "storage:write", "search:query"],
     routine: [
