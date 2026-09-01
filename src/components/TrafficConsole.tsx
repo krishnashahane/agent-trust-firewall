@@ -15,6 +15,7 @@ import {
   relativeTime,
 } from "@/components/ui";
 import { Counter } from "@/components/motion";
+import { Sparkline } from "@/components/Sparkline";
 import type { PolicyViolation, RiskBand, Verdict } from "@/lib/atf/types";
 
 interface Event {
@@ -122,6 +123,46 @@ export function TrafficConsole() {
           hint="encrypted to destination"
         />
       </div>
+
+      {events && events.length >= 2 ? (
+        <Panel
+          title="Risk over time"
+          caption="Every score the engine produced in this window, oldest to newest. A single number hides whether risk is climbing."
+        >
+          <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-4 sm:px-5">
+            <Sparkline
+              // listEvents returns newest-first; a trend reads left-to-right.
+              values={[...events].reverse().map((e) => e.score)}
+              width={520}
+              height={54}
+              color="var(--accent)"
+              label={`Risk scores for the last ${events.length} intercepted calls, oldest to newest.`}
+            />
+            <dl className="flex gap-5 text-[11px]">
+              <div>
+                <dt className="text-[var(--text-faint)]">Peak</dt>
+                <dd className="tnum mt-0.5 text-[15px] font-semibold">
+                  {Math.max(...events.map((e) => e.score)).toFixed(0)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--text-faint)]">Median</dt>
+                <dd className="tnum mt-0.5 text-[15px] font-semibold">
+                  {(() => {
+                    const sorted = [...events].map((e) => e.score).sort((a, b) => a - b);
+                    const mid = Math.floor(sorted.length / 2);
+                    const median =
+                      sorted.length % 2 === 0
+                        ? ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2
+                        : (sorted[mid] ?? 0);
+                    return median.toFixed(0);
+                  })()}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </Panel>
+      ) : null}
 
       <Panel
         title="Live traffic"

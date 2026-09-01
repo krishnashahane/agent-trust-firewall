@@ -11,6 +11,7 @@ import {
   relativeTime,
 } from "@/components/ui";
 import { Counter } from "@/components/motion";
+import { Sparkline } from "@/components/Sparkline";
 import type { Verdict } from "@/lib/atf/types";
 
 interface AgentIntel {
@@ -196,8 +197,29 @@ export function AgentsView() {
                   ) : null}
                 </div>
 
-                {agent.recent.length > 0 ? (
+                {agent.recent.length >= 2 ? (
                   <div className="mt-3.5">
+                    <div className="mb-1.5 text-[10px] uppercase tracking-[0.06em] text-[var(--text-faint)]">
+                      Risk trend (oldest to newest)
+                    </div>
+                    <Sparkline
+                      values={[...agent.recent].reverse().map((r) => r.score)}
+                      width={200}
+                      height={28}
+                      color={
+                        agent.blocked > 0
+                          ? "var(--block)"
+                          : agent.flagged > 0
+                            ? "var(--flag)"
+                            : "var(--allow)"
+                      }
+                      label={`Risk scores for ${agent.displayName}'s last ${agent.recent.length} calls, oldest to newest.`}
+                    />
+                  </div>
+                ) : null}
+
+                {agent.recent.length > 0 ? (
+                  <div className="mt-3">
                     <div className="mb-1.5 text-[10px] uppercase tracking-[0.06em] text-[var(--text-faint)]">
                       Recent verdicts (newest first)
                     </div>

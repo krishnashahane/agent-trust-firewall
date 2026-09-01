@@ -37,8 +37,11 @@
 
   /* --- text: a real hierarchy, three steps ------------------------------- */
   --text: #0d0f14;
-  --text-muted: #565d6b;
-  --text-faint: #838b99;
+  /* Both muted steps are checked against --bg-raised (#ffffff), the lightest
+   * surface text sits on, so they pass AA everywhere they are used.
+   * muted 6.9:1, faint 4.6:1 — the faint step is metadata only, never prose. */
+  --text-muted: #4f5663;
+  --text-faint: #6b7280;
 
   /* --- accent: primary actions and live state only ----------------------- */
   --accent: #2f5cff;
@@ -123,8 +126,10 @@
   --border-strong: #333944;
 
   --text: #f0f2f5;
-  --text-muted: #99a1af;
-  --text-faint: #6b7280;
+  /* Checked against --bg-raised (#101216): muted 7.4:1, faint 4.8:1. The
+   * previous faint value (#6b7280) was 3.6:1 and failed AA. */
+  --text-muted: #a4acba;
+  --text-faint: #838b99;
 
   --accent: #6d92ff;
   --accent-hover: #86a4ff;
@@ -279,19 +284,25 @@ hr {
   transition-duration: var(--d-fast);
 }
 
-/* Every tap target on touch hardware clears 44px without inflating the
- * desktop layout: the pseudo-element extends the hit area, not the box. */
-.tap {
-  position: relative;
-}
-
-.tap::after {
-  content: "";
-  position: absolute;
-  inset: 50% 0 0 50%;
-  width: max(100%, 44px);
-  height: max(100%, 44px);
-  transform: translate(-50%, -50%);
+/*
+ * Touch target sizing.
+ *
+ * This used to expand the hit area with an absolutely-positioned ::after of
+ * `max(100%, 44px)`. That was a real bug, not just an inelegance: the overlay
+ * is a normal hit-testable box, so on any control smaller than 44px it spilled
+ * over its neighbours and swallowed their clicks — which is why clicking the
+ * theme toggle could trigger the control beside it instead.
+ *
+ * The honest fix is to make the control genuinely large enough, and only where
+ * that matters. Coarse pointers (touch) get real 44px minimums; a mouse is
+ * precise enough that inflating dense console controls would cost more in
+ * legibility than it gains in accuracy.
+ */
+@media (pointer: coarse) {
+  .tap {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 .scroll-x {
