@@ -38,6 +38,7 @@ nothing in `src/lib/atf/` imports Next.js.
 | `src/lib/atf/risk/engine.ts` | Pure weighted composition → `{score 0-100, band, contributions[]}`. Deterministic, and every point is attributable. |
 | `src/lib/atf/interceptor/policy.ts` | Hard rules (unconditional BLOCK) and escalations (unconditional minimum FLAG). |
 | `src/lib/atf/audit/chain.ts` | SHA-256 hash-chained log. `verifyChain()` names the exact record that broke. |
+| `src/lib/atf/session.ts` | Per-visitor config sandboxes. Bounded, TTL'd, cookie-keyed; keeps one visitor's tuning off another's screen. |
 | `src/lib/atf/store/port.ts` | The storage interface. `memory.ts` is the only implementation; a Postgres one drops in without touching the engine. |
 | `src/lib/atf/mcp/server.ts` | A real MCP stdio server. Every `tools/call` routes through `decide()`; blocked calls never reach the tool. |
 | `src/lib/atf/client.ts` | Agent-side SDK. Holds the secret key, builds the proofs, seals the envelope. There is no field in the protocol that could carry a secret key. |
@@ -50,6 +51,13 @@ this order: `originGuard` → `limit` → `readJson(schema)`.
 - **Hard rules are not tunable.** Unknown agent, revoked key, unverified proof,
   replayed challenge, ungranted capability ⇒ BLOCK at *every* configuration.
   `/api/config` can move weights and thresholds; it cannot disable these.
+- **Configuration is per-visitor, never global.** Applying a config writes to a
+  sandbox keyed by an opaque HttpOnly cookie (`src/lib/atf/session.ts`), bounded
+  and TTL'd; the shared gateway config is read-only from every request path. The
+  original design mutated the single shared config, which let any anonymous
+  visitor change scoring for everyone else — an unauthenticated global state
+  mutation, in a firewall. `tests/session.test.ts` asserts the isolation and
+  that a sandbox still cannot disable a hard rule.
 - **Escalations.** A confident payload detection (prompt injection, credential
   shape) forces at least a FLAG regardless of the weighted score — heuristics
   should reach a human, not be averaged away.
@@ -82,7 +90,9 @@ two extra rules:
 
 Lookups are server-side only (`/api/osint`), cached 30 minutes on success and 2
 minutes on failure, de-duplicated in flight, and capped at a 4s timeout per
-provider. `isPublicIpv4` refuses private, loopback, link-local and CGNAT ranges —
+provider. Request paths read the cache (`peekIp`) and warm it in the background
+(`warmIp`) rather than awaiting providers — blocking `/api/agents` on a dozen
+third-party round-trips put their latency into our own cold start. `isPublicIpv4` refuses private, loopback, link-local and CGNAT ranges —
 without it, an endpoint that fetches a user-supplied address is an SSRF
 primitive.
 

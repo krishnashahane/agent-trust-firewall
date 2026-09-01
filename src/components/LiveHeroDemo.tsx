@@ -172,20 +172,20 @@ export function LiveHeroDemo() {
       <div className="px-4 py-4 sm:px-5">
         <dl className="mono space-y-1 text-[11.5px] leading-relaxed">
           <div className="flex gap-2">
-            <dt className="w-12 shrink-0 text-[var(--text-faint)]">agent</dt>
+            <dt className="w-14 shrink-0 text-[var(--text-faint)]">scenario</dt>
             <dd className="min-w-0 truncate">
               {outcome ? outcome.scenario.title : "…"}
             </dd>
           </div>
           <div className="flex gap-2">
-            <dt className="w-12 shrink-0 text-[var(--text-faint)]">calls</dt>
+            <dt className="w-14 shrink-0 text-[var(--text-faint)]">checks</dt>
             <dd className="min-w-0 truncate">
               {decision ? decision.risk.contributions.length : 7} signals scored
             </dd>
           </div>
           {outcome?.intel ? (
             <div className="flex gap-2">
-              <dt className="w-12 shrink-0 text-[var(--text-faint)]">from</dt>
+              <dt className="w-14 shrink-0 text-[var(--text-faint)]">from</dt>
               <dd className="min-w-0 truncate">{outcome.intel.ip}</dd>
             </div>
           ) : null}

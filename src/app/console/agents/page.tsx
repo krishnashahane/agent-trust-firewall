@@ -6,7 +6,19 @@ export const metadata = {
   title: "Agents",
   description: "The enrolled agent fleet, their capabilities, trust scores and live threat intelligence.",
   alternates: { canonical: "/console/agents" },
-  openGraph: { title: "Agents · Agent Trust Firewall", description: "The enrolled agent fleet, their capabilities, trust scores and live threat intelligence.", url: "/console/agents" },
+  openGraph: {
+    title: "Agents · Agent Trust Firewall",
+    description: "The enrolled agent fleet, their capabilities, trust scores and live threat intelligence.",
+    url: "/console/agents",
+    // Declaring openGraph here replaces the parent block entirely, so the
+    // image has to be named again or the card ships with no picture.
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    title: "Agents · Agent Trust Firewall",
+    description: "The enrolled agent fleet, their capabilities, trust scores and live threat intelligence.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function AgentsPage() {

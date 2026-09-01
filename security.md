@@ -21,6 +21,9 @@ not just its firewall logic — is in scope and welcome.
   only in `src/lib/atf/gateway.ts` and no route serialises it. Agent secret keys
   never enter the system at all — an agent proves possession with a
   zero-knowledge proof, and the protocol has no field that could carry a key.
+- **No unauthenticated write touches shared state.** Risk configuration is
+  sandboxed per visitor behind an opaque HttpOnly cookie; the shared config is
+  read-only. Hard rules stay in force in every sandbox.
 - **Every route validates and rate-limits.** All API routes compose
   `originGuard` → `limit` → `readJson(schema)` (`src/lib/guard.ts`). Cross-site
   browser requests to state-changing endpoints are rejected; bodies are capped at

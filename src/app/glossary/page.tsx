@@ -5,7 +5,19 @@ export const metadata = {
   title: "Glossary",
   description: "Every security term this product uses, explained in plain language first.",
   alternates: { canonical: "/glossary" },
-  openGraph: { title: "Glossary · Agent Trust Firewall", description: "Every security term this product uses, explained in plain language first.", url: "/glossary" },
+  openGraph: {
+    title: "Glossary · Agent Trust Firewall",
+    description: "Every security term this product uses, explained in plain language first.",
+    url: "/glossary",
+    // Declaring openGraph here replaces the parent block entirely, so the
+    // image has to be named again or the card ships with no picture.
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    title: "Glossary · Agent Trust Firewall",
+    description: "Every security term this product uses, explained in plain language first.",
+    images: ["/opengraph-image"],
+  },
 };
 
 /**

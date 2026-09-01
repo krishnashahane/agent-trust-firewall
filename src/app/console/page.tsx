@@ -6,7 +6,19 @@ export const metadata = {
   title: "Console",
   description: "Live traffic through the firewall: every intercepted agent call, its risk score and its verdict.",
   alternates: { canonical: "/console" },
-  openGraph: { title: "Console · Agent Trust Firewall", description: "Live traffic through the firewall: every intercepted agent call, its risk score and its verdict.", url: "/console" },
+  openGraph: {
+    title: "Console · Agent Trust Firewall",
+    description: "Live traffic through the firewall: every intercepted agent call, its risk score and its verdict.",
+    url: "/console",
+    // Declaring openGraph here replaces the parent block entirely, so the
+    // image has to be named again or the card ships with no picture.
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    title: "Console · Agent Trust Firewall",
+    description: "Live traffic through the firewall: every intercepted agent call, its risk score and its verdict.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function ConsolePage() {

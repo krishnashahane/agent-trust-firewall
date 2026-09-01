@@ -9,7 +9,19 @@ export const metadata = {
   title: "Attack range",
   description: "Run real adversaries at the firewall — forged keys, replayed proofs, capability escalation.",
   alternates: { canonical: "/console/attack-range" },
-  openGraph: { title: "Attack range · Agent Trust Firewall", description: "Run real adversaries at the firewall — forged keys, replayed proofs, capability escalation.", url: "/console/attack-range" },
+  openGraph: {
+    title: "Attack range · Agent Trust Firewall",
+    description: "Run real adversaries at the firewall — forged keys, replayed proofs, capability escalation.",
+    url: "/console/attack-range",
+    // Declaring openGraph here replaces the parent block entirely, so the
+    // image has to be named again or the card ships with no picture.
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    title: "Attack range · Agent Trust Firewall",
+    description: "Run real adversaries at the firewall — forged keys, replayed proofs, capability escalation.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function AttackRangePage() {

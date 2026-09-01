@@ -6,7 +6,19 @@ export const metadata = {
   title: "Audit",
   description: "The hash-chained audit log. Try to forge a record and watch the integrity check catch it.",
   alternates: { canonical: "/console/audit" },
-  openGraph: { title: "Audit · Agent Trust Firewall", description: "The hash-chained audit log. Try to forge a record and watch the integrity check catch it.", url: "/console/audit" },
+  openGraph: {
+    title: "Audit · Agent Trust Firewall",
+    description: "The hash-chained audit log. Try to forge a record and watch the integrity check catch it.",
+    url: "/console/audit",
+    // Declaring openGraph here replaces the parent block entirely, so the
+    // image has to be named again or the card ships with no picture.
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    title: "Audit · Agent Trust Firewall",
+    description: "The hash-chained audit log. Try to forge a record and watch the integrity check catch it.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function AuditPage() {
