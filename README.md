@@ -44,6 +44,26 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
+Runs with no configuration at all: with no `DATABASE_URL` it uses an in-process
+store and seeds itself on boot. `/api/health` tells you which store is live.
+
+### With durable storage
+
+```bash
+vercel integration add neon   # provisions Postgres, injects DATABASE_URL
+vercel env pull .env.local
+npm run seed                  # one time: ~500 statements, ~45s
+```
+
+Seeding is a deployment step rather than something the app does on demand.
+Every seeded call is a real challenge, a real Schnorr proof and a real scoring
+pass, which is genuinely expensive — running it inside a request would put tens
+of seconds of database round-trips on a cold start.
+
+Set `ATF_DEMO_SEED` to any high-entropy string when using a shared database, so
+every instance derives the same demo-fleet keys as the ones enrolled in it. No
+agent secret is ever stored.
+
 Then open **/console/attack-range** and run an adversary. Each one is built for
 real — a genuinely forged key, a genuinely replayed proof — and submitted through
 the same decision path production traffic uses.
@@ -90,8 +110,9 @@ an outage as a clean result would be worse than having no intel at all.
 
 ## Honest scope
 
-Storage is in-process, so history resets on cold start — the storage port exists
-so a database is a swap, not a rewrite. The demo fleet is synthetic; its keys,
-proofs and verdicts are not. And a firewall must read a request to score it, so
-ATF is a trusted endpoint for the outer envelope; only destination-sealed fields
-are opaque to it.
+The demo fleet is synthetic, but its keys, proofs, verdicts and origin addresses
+are real — the addresses are live cloud hosts and the intelligence shown about
+them is fetched at request time, so any of it can be checked. Risk tuning is
+sandboxed per visitor, so nothing you change affects anyone else. And a firewall
+must read a request to score it, so ATF is a trusted endpoint for the outer
+envelope; only destination-sealed fields are opaque to it.
