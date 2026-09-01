@@ -18,7 +18,11 @@ export async function GET(request: Request) {
 
     const gateway = await getSeededGateway();
     const events = await gateway.store.listEvents(count);
-    const window = events.filter((e) => Date.now() - e.timestamp < 60 * 60_000);
+    // Summarise the window actually returned rather than a fixed hour. With a
+    // durable store the seeded history ages past any fixed cutoff, and a
+    // console that reads zero on a quiet day would be describing the clock,
+    // not the firewall.
+    const window = events;
 
     return ok({
       events,

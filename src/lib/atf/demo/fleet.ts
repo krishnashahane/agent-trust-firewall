@@ -6,8 +6,12 @@
  * arrives. What is synthetic here is the *actors* — the cryptography, the
  * scoring and the verdicts applied to them are the real engine, not a script.
  */
-import { generateKeyPair } from "../identity/schnorr.ts";
-import { generateEncryptionKeyPair } from "../crypto/e2ee.ts";
+import { generateKeyPair, publicKeyFor } from "../identity/schnorr.ts";
+import {
+  generateEncryptionKeyPair,
+  encryptionPublicKeyFor,
+} from "../crypto/e2ee.ts";
+import { bytesToHex, tagged, utf8 } from "../crypto/primitives.ts";
 
 export interface DemoAgentSpec {
   agentId: string;
@@ -115,7 +119,73 @@ export interface DemoIdentity extends DemoAgentSpec {
   destinationPublicKey: string;
 }
 
+/**
+ * Derive this demo agent's keys from a seed instead of minting them randomly.
+ *
+ * Required once storage is durable. Enrolment records a *public* key, and agent
+ * secrets are deliberately never stored — so if each serverless instance minted
+ * its own keypair, an instance would sign with a key that did not match the
+ * enrolment another instance had already persisted, and every scenario would
+ * fail with `identity-unproven`. Deriving from a shared seed makes every
+ * instance agree without any secret ever reaching the database.
+ *
+ * The seed is a server-side environment value. When it is absent (local dev,
+ * or a fresh clone) keys are random per process, which is fine because nothing
+ * is being persisted across instances in that case either.
+ *
+ * Worth being precise about what this is not: these are synthetic demo actors,
+ * and their keys guard nothing. The firewall's real security properties do not
+ * depend on them being secret — they depend on the proofs verifying, which they
+ * do either way.
+ */
+/**
+ * A stable signing key for a named demo actor.
+ *
+ * Exported because the attack range needs the same guarantee the fleet does:
+ * with durable storage, an actor's enrolled public key and the key an instance
+ * signs with must agree, or the scenario fails for the wrong reason.
+ */
+export function deriveSigningKey(label: string): {
+  secretKey: string;
+  publicKey: string;
+} {
+  const seed = process.env.ATF_DEMO_SEED;
+  if (!seed) {
+    const generated = generateKeyPair();
+    return { secretKey: generated.secretKey, publicKey: generated.publicKey };
+  }
+  const secretKey = bytesToHex(
+    tagged("atf/demo-key/v1/signing", utf8(seed), utf8(label)),
+  );
+  return { secretKey, publicKey: publicKeyFor(secretKey) };
+}
+
+function deriveKeys(spec: DemoAgentSpec, seed: string) {
+  const scalar = (purpose: string) =>
+    bytesToHex(tagged(`atf/demo-key/v1/${purpose}`, utf8(seed), utf8(spec.agentId)));
+
+  const signingSecretKey = scalar("signing");
+  const encryptionSecretKey = scalar("encryption");
+  const destinationSecretKey = scalar("destination");
+
+  return {
+    signingSecretKey,
+    signingPublicKey: publicKeyFor(signingSecretKey),
+    encryptionPublicKey: encryptionPublicKeyFor(encryptionSecretKey),
+    destinationSecretKey,
+    destinationPublicKey: encryptionPublicKeyFor(destinationSecretKey),
+  };
+}
+
 export function mintIdentity(spec: DemoAgentSpec): DemoIdentity {
+  const seed = process.env.ATF_DEMO_SEED;
+
+  if (seed) {
+    return { ...spec, ...deriveKeys(spec, seed) };
+  }
+
+  // No seed configured: random per process. Correct for a single instance,
+  // and the only option that does not put a fixed key in the repository.
   const signing = generateKeyPair();
   const encryption = generateEncryptionKeyPair();
   const destination = generateEncryptionKeyPair();

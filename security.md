@@ -76,9 +76,9 @@ input, so a hostile caller cannot turn a parse error into a different code path.
 
 Stated here and on the landing page rather than glossed over.
 
-1. **Storage is in-process.** History resets on a serverless cold start. The
-   storage port (`src/lib/atf/store/port.ts`) exists so a durable backend is a
-   swap, not a rewrite.
+1. **Storage is durable when configured.** With `DATABASE_URL` set the audit log
+   and traffic history live in Postgres and survive restarts; without it the same
+   code uses an in-process store that does not. `/api/health` reports which.
 2. **Rate limiting is per instance.** It bounds one process honestly rather than
    pretending to be a distributed limit.
 3. **ATF reads the outer envelope.** A firewall that scores a request must be

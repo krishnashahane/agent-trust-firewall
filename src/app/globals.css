@@ -255,6 +255,9 @@ hr {
   background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
+  /* Just enough separation from the page to read as a surface rather than a
+   * outlined rectangle. Any more and a console of twelve panels turns noisy. */
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-flat {
@@ -305,10 +308,80 @@ hr {
   }
 }
 
+/* Column headers stay legible when a long table scrolls under them. */
+.sticky-head thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-raised);
+}
+
+/* A hairline under the sticky header, drawn as a shadow so it does not shift
+ * the row heights the way a border would. */
+.sticky-head thead th::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: var(--border);
+}
+
 .scroll-x {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
+}
+
+/* Sliders are the primary control on the tuning page; the browser default
+ * track is too heavy against these surfaces and its thumb has no focus state. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: currentColor;
+  border: 2px solid var(--bg-raised);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--d-fast) var(--e-out);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: currentColor;
+  border: 2px solid var(--bg-raised);
+  box-shadow: var(--shadow-sm);
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ------------------------------------------------------------- motion --- */

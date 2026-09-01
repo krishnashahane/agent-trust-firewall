@@ -11,9 +11,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify": "node --experimental-strip-types scripts/verify.ts",
-    "mcp": "node --experimental-strip-types src/lib/atf/mcp/server.ts"
+    "mcp": "node --experimental-strip-types src/lib/atf/mcp/server.ts",
+    "seed": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/seed.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "@noble/ciphers": "1.3.0",
     "@noble/curves": "1.9.2",
     "@noble/hashes": "1.8.0",

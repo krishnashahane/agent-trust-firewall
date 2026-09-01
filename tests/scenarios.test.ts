@@ -30,6 +30,7 @@ async function freshGateway(): Promise<Gateway> {
     bootedAt: Date.now(),
     config: DEFAULT_RISK_CONFIG,
     identities: new Map(),
+    storage: "memory",
   };
   await seedDemoWorld(gateway);
   return gateway;

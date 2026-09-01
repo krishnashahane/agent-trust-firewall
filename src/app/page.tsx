@@ -260,9 +260,10 @@ export default function OverviewPage() {
                   calls that pass through the interceptor.
                 </li>
                 <li>
-                  Storage is in-process, so the traffic feed and audit log start fresh
-                  whenever the server goes cold. Nothing on this site claims otherwise.
-                  The storage layer is an interface; a database drops in behind it.
+                  The audit log and traffic history are stored in Postgres, so they
+                  survive restarts and redeploys — which is what makes the hash chain
+                  worth verifying. Without a database configured the same code falls
+                  back to an in-process store and says so on <code>/api/health</code>.
                 </li>
                 <li>
                   The agents in the demo fleet are synthetic. Their keys, proofs,

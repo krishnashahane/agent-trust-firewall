@@ -8,8 +8,13 @@
  */
 import { generateEncryptionKeyPair, encryptionPublicKeyFor } from "./crypto/e2ee.ts";
 import { MemoryStore } from "./store/memory.ts";
+import {
+  PostgresStore,
+  ensureSchema,
+  isPostgresConfigured,
+} from "./store/postgres.ts";
 import { DEFAULT_RISK_CONFIG, type RiskConfig } from "./risk/config.ts";
-import { seedDemoWorld } from "./demo/seed.ts";
+import { registerFleet, seedDemoWorld } from "./demo/seed.ts";
 import type { DemoIdentity } from "./demo/fleet.ts";
 import type { Store } from "./store/port.ts";
 
@@ -26,6 +31,8 @@ export interface Gateway {
    * app, say) must never end up sharing one set of keys.
    */
   identities: Map<string, DemoIdentity>;
+  /** Which storage implementation is behind the port, for /api/health. */
+  storage: "postgres" | "memory";
 }
 
 declare global {
@@ -40,13 +47,18 @@ function createGateway(): Gateway {
       ? { secretKey: pinned.toLowerCase(), publicKey: encryptionPublicKeyFor(pinned) }
       : generateEncryptionKeyPair();
 
+  // Durable when a database is configured, in-process otherwise. The engine
+  // never learns which — that is the point of the port.
+  const durable = isPostgresConfigured();
+
   return {
-    store: new MemoryStore(),
+    store: durable ? new PostgresStore() : new MemoryStore(),
     secretKey: keys.secretKey,
     publicKey: keys.publicKey,
     bootedAt: Date.now(),
     config: DEFAULT_RISK_CONFIG,
     identities: new Map(),
+    storage: durable ? "postgres" : "memory",
   };
 }
 
@@ -60,7 +72,20 @@ export async function getGateway(): Promise<Gateway> {
   // Concurrent first requests must not each seed their own world.
   globalThis.__atfGatewayInit ??= (async () => {
     const gateway = createGateway();
-    await seedDemoWorld(gateway);
+
+    if (gateway.storage === "postgres") {
+      await ensureSchema();
+      // Deliberately not seeded here. Seeding runs ~500 statements, and against
+      // a remote database that is tens of seconds — on a request path it would
+      // reintroduce exactly the cold-start timeouts this release fixed. The
+      // durable store is seeded once, out of band, by `npm run seed`. Agents
+      // are still registered below because that is a handful of idempotent
+      // upserts and the fleet's derived keys must match what is stored.
+      await registerFleet(gateway);
+    } else {
+      await seedDemoWorld(gateway);
+    }
+
     globalThis.__atfGateway = gateway;
     return gateway;
   })().catch((error: unknown) => {
@@ -86,9 +111,13 @@ export async function getGateway(): Promise<Gateway> {
  */
 export async function getSeededGateway(): Promise<Gateway> {
   const gateway = await getGateway();
-  const events = await gateway.store.listEvents(1);
-  if (events.length === 0) {
-    await seedDemoWorld(gateway);
+  // Only the in-process store re-seeds on demand: it is cheap, local, and its
+  // world genuinely vanishes when the instance does. A durable store keeps its
+  // history, so an empty one means it has not been seeded yet — which is a
+  // deployment step (`npm run seed`), not something to do inside a request.
+  if (gateway.storage === "memory") {
+    const events = await gateway.store.listEvents(1);
+    if (events.length === 0) await seedDemoWorld(gateway);
   }
   return gateway;
 }

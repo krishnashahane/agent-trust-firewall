@@ -39,6 +39,7 @@ nothing in `src/lib/atf/` imports Next.js.
 | `src/lib/atf/interceptor/policy.ts` | Hard rules (unconditional BLOCK) and escalations (unconditional minimum FLAG). |
 | `src/lib/atf/audit/chain.ts` | SHA-256 hash-chained log. `verifyChain()` names the exact record that broke. |
 | `src/lib/atf/session.ts` | Per-visitor config sandboxes. Bounded, TTL'd, cookie-keyed; keeps one visitor's tuning off another's screen. |
+| `src/lib/atf/store/postgres.ts` | Durable store (Neon). Nonce consumption is one conditional DELETE…RETURNING so a replay cannot win a race; `seq` is the audit primary key so a concurrent append fails rather than forking the chain. |
 | `src/lib/atf/store/port.ts` | The storage interface. `memory.ts` is the only implementation; a Postgres one drops in without touching the engine. |
 | `src/lib/atf/mcp/server.ts` | A real MCP stdio server. Every `tools/call` routes through `decide()`; blocked calls never reach the tool. |
 | `src/lib/atf/client.ts` | Agent-side SDK. Holds the secret key, builds the proofs, seals the envelope. There is no field in the protocol that could carry a secret key. |
@@ -119,8 +120,12 @@ signal.
 
 ## Honest scope
 
-- Storage is in-process; history resets on cold start. The port exists so this is
-  a swap, not a rewrite.
+- Storage is Postgres when `DATABASE_URL` is set and in-process otherwise; the
+  port made that a swap rather than a rewrite, as advertised. Seeding is a
+  deployment step (`npm run seed`), never a request: it runs ~500 statements and
+  tens of seconds against a remote database.
+- Demo fleet keys are derived from `ATF_DEMO_SEED` so every instance agrees with
+  what is enrolled. No agent secret is ever stored.
 - The demo fleet is synthetic. Its keys, proofs, scores and verdicts are not —
   seeding runs real proofs through the real engine at backdated timestamps.
 - A firewall must read a request to score it, so ATF is a trusted endpoint for

@@ -162,8 +162,7 @@ export function AuditView() {
                 {live?.valid ? "Chain verified — unbroken" : "Chain broken"}
               </span>
               <span className="text-[12px] text-[var(--text-muted)]">
-                <Counter value={length} /> record{length === 1 ? "" : "s"} written since
-                this server instance started
+                <Counter value={length} /> record{length === 1 ? "" : "s"} in the chain
               </span>
             </div>
           )}
@@ -228,7 +227,7 @@ export function AuditView() {
 
       <Panel
         title="Audit records"
-        caption="Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability. Storage is in-memory, so this log starts fresh whenever the server goes cold."
+        caption="Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability. The chain is persisted, so it survives restarts and redeploys."
       >
         {error ? (
           <EmptyState
@@ -298,7 +297,7 @@ export function AuditView() {
           />
         ) : (
           <div className="scroll-x">
-            <table className="w-full min-w-[700px] text-left text-[12px]">
+            <table className="sticky-head w-full min-w-[700px] text-left text-[12px]">
               <caption className="sr-only">
                 Hash-chained audit records, newest first
               </caption>

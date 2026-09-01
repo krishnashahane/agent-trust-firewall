@@ -21,7 +21,10 @@ export async function GET(request: Request) {
       agentsEnrolled: agents.length,
       auditLength: await gateway.store.auditLength(),
       auditChainValid: chain.valid,
-      storage: "in-process (resets on cold start)",
+      storage:
+        gateway.storage === "postgres"
+          ? "postgres (durable across restarts)"
+          : "in-process (resets on cold start)",
       gatewayKeyPinned: Boolean(process.env.ATF_GATEWAY_SECRET_KEY),
     });
   } catch (error) {

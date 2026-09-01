@@ -8,6 +8,7 @@
  * outcomes is written down in advance — that is the point of having them.
  */
 import { generateKeyPair } from "../identity/schnorr.ts";
+import { deriveSigningKey } from "./fleet.ts";
 import { capabilityRoot, proveCapability } from "../identity/merkle.ts";
 import { issueChallenge } from "../identity/nonce.ts";
 import { decide, requestDigestFor } from "../interceptor/decide.ts";
@@ -302,10 +303,21 @@ export async function runScenario(
 
     case "revoked": {
       // A dedicated agent, so revoking it does not break the other scenarios.
-      const rogue = generateKeyPair();
-      const agentId = `compromised-worker-${now.toString(36)}`;
+      // Its key is derived, not generated: the enrolment persists, so a fresh
+      // keypair each run would make the call fail as identity-unproven rather
+      // than as the revoked key this scenario is actually demonstrating.
+      const rogue = deriveSigningKey("compromised-worker");
+      // A fixed id, not a timestamped one. With durable storage a unique id
+      // per run would enrol a new agent row every time anyone pressed this
+      // button and leave it there forever. The agent is created once and stays
+      // revoked, which is also a truer picture: a revoked key does not vanish.
+      const agentId = "compromised-worker";
       const capabilities = ["storage:read"];
-      await registerAgent(
+      // Idempotent: registerAgent refuses to re-enrol over a live id, and it
+      // should — silently replacing an existing agent's key is the takeover
+      // the registry exists to prevent.
+      const alreadyEnrolled = await store.getAgent(agentId);
+      if (!alreadyEnrolled) await registerAgent(
         store,
         {
           agentId,

@@ -11,7 +11,7 @@
  * seeded PRNG for its choices of tool and timing, so the demo world looks the
  * same shape on every boot. Cryptographic randomness is untouched.
  */
-import { registerAgent } from "../identity/registry.ts";
+import { registerAgent, rotateKey } from "../identity/registry.ts";
 import { issueChallenge } from "../identity/nonce.ts";
 import { decide } from "../interceptor/decide.ts";
 import { signCall } from "../client.ts";
@@ -45,7 +45,15 @@ const BENIGN_ARGS: Record<string, Record<string, unknown>> = {
 const HISTORY_MS = 28 * 60_000;
 const CALLS_PER_AGENT = 12;
 
-export async function seedDemoWorld(gateway: Gateway): Promise<void> {
+/**
+ * Enrol the demo fleet.
+ *
+ * Separated from traffic seeding because the two have very different costs:
+ * this is six idempotent upserts of public keys, which every instance needs so
+ * that the keys it signs with match what is stored. Generating the traffic is
+ * hundreds of statements and belongs out of the request path entirely.
+ */
+export async function registerFleet(gateway: Gateway): Promise<void> {
   const rand = prng(0x41544601);
   const now = Date.now();
   const identities = gateway.identities;
@@ -56,21 +64,69 @@ export async function seedDemoWorld(gateway: Gateway): Promise<void> {
 
     // Backdate enrolment so agents do not all read as "registered seconds ago",
     // which would make every one of them look suspicious on the identity signal.
-    const registeredAt = now - HISTORY_MS - 6 * 3_600_000 * (1 + rand());
-    await registerAgent(
-      gateway.store,
-      {
-        agentId: identity.agentId,
-        displayName: identity.displayName,
-        signingPublicKey: identity.signingPublicKey,
-        encryptionPublicKey: identity.encryptionPublicKey,
-        capabilities: identity.capabilities,
-        originIp: identity.originIp,
-      },
-      registeredAt,
-    );
+    // Math.round matters: this is an epoch timestamp, and rand() makes it
+    // fractional. Nothing in the in-process store minded, but a BIGINT column
+    // rejects it outright — a good example of a typed store catching what an
+    // untyped one hid.
+    const registeredAt = Math.round(now - HISTORY_MS - 6 * 3_600_000 * (1 + rand()));
 
+    // Idempotent, because this runs on every cold start against a store that
+    // may already hold the fleet. Note what it does *not* do: re-enrol over an
+    // existing id. `registerAgent` refuses that deliberately — silently
+    // replacing a live agent's key is exactly the takeover the registry exists
+    // to prevent — so an existing agent is either left alone or, if its stored
+    // key no longer matches what this instance derives, rotated through the
+    // sanctioned path.
+    const existing = await gateway.store.getAgent(identity.agentId);
+
+    if (!existing) {
+      await registerAgent(
+        gateway.store,
+        {
+          agentId: identity.agentId,
+          displayName: identity.displayName,
+          signingPublicKey: identity.signingPublicKey,
+          encryptionPublicKey: identity.encryptionPublicKey,
+          capabilities: identity.capabilities,
+          originIp: identity.originIp,
+        },
+        registeredAt,
+      );
+      continue;
+    }
+
+    if (existing.signingPublicKey !== identity.signingPublicKey.toLowerCase()) {
+      // Reached when ATF_DEMO_SEED changes, or when a stored fleet predates
+      // deterministic derivation. Rotating keeps the enrolled key and the key
+      // this instance signs with in agreement; without it every scenario would
+      // fail with identity-unproven.
+      await rotateKey(gateway.store, identity.agentId, identity.signingPublicKey);
+    }
   }
+}
+
+/**
+ * Generate the baseline traffic.
+ *
+ * Every call here is a genuine challenge, a genuine zero-knowledge proof and a
+ * genuine scoring pass at a backdated timestamp — nothing writes a verdict
+ * directly. That authenticity is also why it is expensive: against a remote
+ * database it is roughly five hundred statements and tens of seconds, so it
+ * runs from `npm run seed`, never inside a request.
+ */
+export async function seedDemoWorld(gateway: Gateway): Promise<void> {
+  await registerFleet(gateway);
+
+  // Durable history outlives the instance; replaying the seed would pile
+  // duplicate calls into a log whose whole claim is that it is accurate.
+  if ((await gateway.store.listEvents(1)).length > 0) return;
+
+  // A fresh generator, seeded identically to the one registerFleet used, so
+  // splitting the two functions did not change the world they produce.
+  const rand = prng(0x41544601);
+  for (let i = 0; i < FLEET.length; i++) rand(); // skip enrolment's draws
+  const now = Date.now();
+  const identities = gateway.identities;
 
   // Interleave the fleet's calls in time so the traffic view reads like a live
   // system rather than one agent at a time.

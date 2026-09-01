@@ -251,7 +251,7 @@ export function AgentsView() {
 
                 <dl className="mt-3.5 flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-[var(--text-faint)]">
                   <div className="flex gap-1.5">
-                    <dt>Calls (1h)</dt>
+                    <dt>Calls (24h)</dt>
                     <dd className="tnum text-[var(--text-muted)]">{agent.calls}</dd>
                   </div>
                   <div className="flex gap-1.5">

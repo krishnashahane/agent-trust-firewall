@@ -97,9 +97,9 @@ export function TrafficConsole() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <Stat
-          label="Calls (1h)"
+          label="Calls shown"
           value={summary ? <Counter value={summary.total} /> : "—"}
-          hint="intercepted and decided"
+          hint="most recent, intercepted and decided"
         />
         <Stat
           label="Allowed"

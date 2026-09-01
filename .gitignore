@@ -8,3 +8,9 @@ out
 next-env.d.ts
 .DS_Store
 coverage
+
+# Agent skills installed by Vercel Marketplace integrations. Local tooling,
+# not part of the application.
+.agents/
+.claude/skills/
+skills-lock.json

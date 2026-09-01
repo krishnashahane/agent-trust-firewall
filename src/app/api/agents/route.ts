@@ -15,7 +15,9 @@ export async function GET(request: Request) {
 
     const rows = await Promise.all(
       agents.map(async (agent) => {
-        const history = await gateway.store.eventsForAgent(agent.agentId, 60 * 60_000, now);
+        // A day, not an hour: the persisted history is what gives the trend
+        // line and the trust score something to describe.
+        const history = await gateway.store.eventsForAgent(agent.agentId, 24 * 60 * 60_000, now);
         const blocked = history.filter((e) => e.verdict === "BLOCK").length;
         const flagged = history.filter((e) => e.verdict === "FLAG").length;
         const avgScore =
