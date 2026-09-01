@@ -1,0 +1,450 @@
+@import "tailwindcss";
+
+/*
+ * ============================================================================
+ * Agent Trust Firewall — design tokens
+ * ============================================================================
+ *
+ * One place for colour, type, spacing and motion. If a component needs a value
+ * that is not here, add it here rather than inlining a magic number.
+ *
+ * Theme model: light is the product's default, unconditionally. It is defined
+ * on bare `:root`, so it is what renders before any script runs and what a
+ * visitor who has never chosen sees — including one whose OS is set to dark.
+ * Dark is opt-in via the toggle, which stamps [data-theme="dark"]. There is
+ * deliberately no `prefers-color-scheme` auto-switch: a security console that
+ * changes appearance based on an OS setting the operator did not apply here is
+ * a surprise, not a feature.
+ *
+ * Colour approach: near-monochrome surfaces with a single accent reserved for
+ * primary actions and live state. Verdict colours (allow/flag/block) are the
+ * only other saturated hues, because they carry meaning.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* --- surfaces: near-white, not muddy grey ------------------------------ */
+  --bg: #fcfcfd;
+  --bg-raised: #ffffff;
+  --bg-sunken: #f4f5f7;
+  --bg-inset: #f8f9fb;
+  --bg-hover: #f1f3f6;
+
+  /* --- lines: hairlines, used sparingly ---------------------------------- */
+  --border: #e7e9ee;
+  --border-strong: #d4d8e0;
+
+  /* --- text: a real hierarchy, three steps ------------------------------- */
+  --text: #0d0f14;
+  --text-muted: #565d6b;
+  --text-faint: #838b99;
+
+  /* --- accent: primary actions and live state only ----------------------- */
+  --accent: #2f5cff;
+  --accent-hover: #2249e0;
+  --accent-text: #ffffff;
+  --accent-soft: #eef2ff;
+  --accent-line: #c9d5ff;
+
+  /* --- verdicts: meaning-bearing, never decorative ----------------------- */
+  --allow: #0a7a4a;
+  --allow-soft: #e7f6ee;
+  --allow-line: #bfe3d0;
+  --flag: #9a5b00;
+  --flag-soft: #fdf3e2;
+  --flag-line: #f0dcb6;
+  --block: #c22a2a;
+  --block-soft: #fdecec;
+  --block-line: #f4c9c9;
+  --seal: #6535c9;
+  --seal-soft: #f1ebfd;
+  --seal-line: #dbcbf8;
+
+  /* --- elevation: barely-there, two steps only --------------------------- */
+  --shadow-sm: 0 1px 2px rgb(13 15 20 / 0.05);
+  --shadow: 0 1px 3px rgb(13 15 20 / 0.06), 0 8px 24px -8px rgb(13 15 20 / 0.10);
+  --shadow-lift: 0 2px 6px rgb(13 15 20 / 0.07), 0 16px 32px -12px rgb(13 15 20 / 0.14);
+
+  /* --- radii ------------------------------------------------------------- */
+  --r-sm: 6px;
+  --r: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+
+  /* --- 8px spacing grid. Every gap/pad in the app resolves to one of these */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+
+  /* --- type scale -------------------------------------------------------- */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --t-micro: 10.5px;
+  --t-xs: 11.5px;
+  --t-sm: 13px;
+  --t-base: 14px;
+  --t-md: 15px;
+  --t-lg: 18px;
+  --t-xl: 22px;
+  --t-2xl: 30px;
+  --t-3xl: 40px;
+  --t-4xl: 52px;
+
+  /* --- motion: durations and easings live here, not in components -------- */
+  --e-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --e-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --e-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --d-fast: 120ms;
+  --d: 180ms;
+  --d-slow: 320ms;
+  --d-reveal: 460ms;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #08090b;
+  --bg-raised: #101216;
+  --bg-sunken: #0b0c0f;
+  --bg-inset: #16191f;
+  --bg-hover: #1b1f26;
+
+  --border: #21252d;
+  --border-strong: #333944;
+
+  --text: #f0f2f5;
+  --text-muted: #99a1af;
+  --text-faint: #6b7280;
+
+  --accent: #6d92ff;
+  --accent-hover: #86a4ff;
+  --accent-text: #08090b;
+  --accent-soft: #141c33;
+  --accent-line: #2a3a63;
+
+  --allow: #3ddc90;
+  --allow-soft: #0c2419;
+  --allow-line: #1c4433;
+  --flag: #eaad46;
+  --flag-soft: #2a1f0e;
+  --flag-line: #4a3617;
+  --block: #ff6b6e;
+  --block-soft: #2c1315;
+  --block-line: #55232a;
+  --seal: #b394ff;
+  --seal-soft: #1d1733;
+  --seal-line: #362a5c;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.5), 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.55), 0 16px 32px -12px rgb(0 0 0 / 0.7);
+}
+
+/* Expose tokens to Tailwind utilities so components use `text-text-muted`
+ * rather than arbitrary-value brackets everywhere. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raised: var(--bg-raised);
+  --color-sunken: var(--bg-sunken);
+  --color-inset: var(--bg-inset);
+  --color-hover: var(--bg-hover);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-allow: var(--allow);
+  --color-allow-soft: var(--allow-soft);
+  --color-flag: var(--flag);
+  --color-flag-soft: var(--flag-soft);
+  --color-block: var(--block);
+  --color-block-soft: var(--block-soft);
+  --color-seal: var(--seal);
+  --color-seal-soft: var(--seal-soft);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+/* ---------------------------------------------------------------- base --- */
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04";
+}
+
+/* Tabular figures everywhere a number can change under you — scores, counts,
+ * timers. Without this, live-updating values jitter as digit widths change. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+  font-size: 0.94em;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Only suppress the ring for pointer users; keyboard focus always shows. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.021em;
+  line-height: 1.18;
+  font-weight: 600;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------------------------------------------------------- components --- */
+
+.panel {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+
+.panel-flat {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: none;
+}
+
+/* Interactive cards lift; static ones must not, or the lift stops meaning
+ * "you can click this". */
+.card-interactive {
+  transition:
+    transform var(--d) var(--e-out),
+    box-shadow var(--d) var(--e-out),
+    border-color var(--d) var(--e-out);
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--border-strong);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+  transition-duration: var(--d-fast);
+}
+
+/* Every tap target on touch hardware clears 44px without inflating the
+ * desktop layout: the pseudo-element extends the hit area, not the box. */
+.tap {
+  position: relative;
+}
+
+.tap::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 0 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+/* ------------------------------------------------------------- motion --- */
+
+@keyframes atf-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes atf-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes atf-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes atf-shimmer {
+  from {
+    background-position: -180% 0;
+  }
+  to {
+    background-position: 180% 0;
+  }
+}
+
+/* A blocked verdict should feel like a door closing, not a fade. */
+@keyframes atf-snap-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes atf-settle-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A chain link failing: a hard shake, then it stays broken. */
+@keyframes atf-break {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  20% {
+    transform: translate3d(-3px, 0, 0);
+  }
+  40% {
+    transform: translate3d(3px, 0, 0);
+  }
+  60% {
+    transform: translate3d(-2px, 0, 0);
+  }
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.live-dot {
+  animation: atf-pulse 2.4s var(--e-in-out) infinite;
+}
+
+.verdict-block {
+  animation: atf-snap-in var(--d-slow) var(--e-snap) both;
+}
+
+.verdict-settle {
+  animation: atf-settle-in var(--d-slow) var(--e-out) both;
+}
+
+.chain-break {
+  animation: atf-break 420ms var(--e-in-out) both;
+}
+
+/* Skeletons match the layout they stand in for, so nothing jumps on load. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-sunken) 0%,
+    var(--bg-hover) 50%,
+    var(--bg-sunken) 100%
+  );
+  background-size: 220% 100%;
+  animation: atf-shimmer 1.6s linear infinite;
+  border-radius: var(--r-sm);
+}
+
+/*
+ * Reduced motion.
+ *
+ * Not a nicety: motion here can be vestibular-triggering, and several of these
+ * animations are large translations. Everything collapses to an instant or
+ * cross-fade — content still arrives, it just stops moving. Note the reveal
+ * utilities also read this preference in JS so elements are never left
+ * invisible waiting for an animation that will not run.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton {
+    animation: none;
+    background: var(--bg-sunken);
+  }
+
+  .card-interactive:hover {
+    transform: none;
+  }
+}
