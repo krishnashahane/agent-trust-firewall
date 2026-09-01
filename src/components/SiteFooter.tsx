@@ -61,7 +61,7 @@ export function SiteFooter() {
                   <Link
                     href={item.href}
                     prefetch={false}
-                    className="text-[12.5px] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
+                    className="link-underline text-[12.5px] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
                   >
                     {item.label}
                   </Link>
@@ -89,7 +89,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href={CONTACT}
-                  className="text-[12.5px] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
+                  className="link-underline text-[12.5px] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
                 >
                   Get in touch
                 </a>
@@ -99,7 +99,7 @@ export function SiteFooter() {
                   href={GITHUB_PROFILE}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="text-[12.5px] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
+                  className="link-underline text-[12.5px] text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
                 >
                   More of my work
                 </a>

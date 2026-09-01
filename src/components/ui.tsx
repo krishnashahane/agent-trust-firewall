@@ -193,7 +193,7 @@ export function Stat({
             ? "var(--seal)"
             : "var(--text)";
   return (
-    <div className="panel px-4 py-3">
+    <div className="panel stat-tile px-4 py-3">
       <div className="text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--text-faint)]">
         {label}
       </div>

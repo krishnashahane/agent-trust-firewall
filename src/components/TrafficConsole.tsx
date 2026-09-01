@@ -16,6 +16,7 @@ import {
 } from "@/components/ui";
 import { Counter } from "@/components/motion";
 import { Sparkline } from "@/components/Sparkline";
+import { CopyValue } from "@/components/CopyValue";
 import type { PolicyViolation, RiskBand, Verdict } from "@/lib/atf/types";
 
 interface Event {
@@ -246,7 +247,7 @@ export function TrafficConsole() {
                     type="button"
                     onClick={() => setExpanded(open ? null : event.id)}
                     aria-expanded={open}
-                    className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-left transition-colors duration-[var(--d-fast)] hover:bg-[var(--bg-hover)] sm:px-5"
+                    className="row-hover flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-left sm:px-5"
                   >
                     <span className="w-[76px] shrink-0">
                       <VerdictBadge verdict={event.verdict} size="sm" />
@@ -372,7 +373,14 @@ export function TrafficConsole() {
                         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-[var(--text-faint)]">
                           <BandLabel band={event.band} />
                           <IntelChip live={event.intelLive} labels={event.intelLabels} />
-                          <span className="mono">audit {event.id.slice(0, 12)}…</span>
+                          <span className="inline-flex items-center gap-1">
+                            audit
+                            <CopyValue
+                              value={event.id}
+                              display={`${event.id.slice(0, 12)}…`}
+                              title="audit record id"
+                            />
+                          </span>
                           <span className="mono">agent {event.agentId}</span>
                         </div>
                       </div>

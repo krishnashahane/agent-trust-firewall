@@ -38,10 +38,51 @@ function useIsActive() {
 
 export function Nav() {
   const isActive = useIsActive();
+  const pathname = usePathname();
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const [marker, setMarker] = useState<{ left: number; width: number } | null>(null);
+  // The first placement must not animate: sliding in from the left edge on
+  // page load reads as a glitch, and a late re-measure once webfonts settle
+  // would otherwise replay the whole transition seconds after arrival.
+  const placed = useRef(false);
+
+  // Measure the active link and move a single underline to it, so navigating
+  // slides the indicator instead of extinguishing one and lighting another.
+  // Measured rather than hard-coded because the labels have different widths
+  // and the font may not have settled on first paint.
+  useEffect(() => {
+    const measure = () => {
+      const list = listRef.current;
+      const active = list?.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!list || !active) {
+        setMarker(null);
+        return;
+      }
+      setMarker({ left: active.offsetLeft, width: active.offsetWidth });
+    };
+
+    // Deferred a frame: on first paint the font may still be swapping, which
+    // would measure a width the label no longer has.
+    const raf = requestAnimationFrame(measure);
+    window.addEventListener("resize", measure);
+    // Re-measure once webfonts settle, but without animating — the label
+    // widths only shift by a pixel or two and animating that looks like a
+    // fault rather than a transition.
+    document.fonts?.ready
+      .then(() => {
+        placed.current = false;
+        measure();
+      })
+      .catch(() => {});
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+    };
+  }, [pathname]);
 
   return (
-    <nav aria-label="Primary" className="hidden min-w-0 flex-1 md:block">
-      <ul className="flex items-center gap-0.5">
+    <nav aria-label="Primary" className="relative hidden min-w-0 flex-1 md:block">
+      <ul ref={listRef} className="relative flex items-center gap-0.5">
         {LINKS.map((link) => {
           const active = isActive(link.href);
           return (
@@ -63,19 +104,35 @@ export function Nav() {
                 }`}
               >
                 {link.label}
-                {/* The active marker is a rule under the label rather than a
-                 * filled pill: less chrome, and it reads as "you are here"
-                 * without competing with the accent used for actions. */}
-                {active ? (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-x-2.5 -bottom-[13px] h-[2px] rounded-full bg-[var(--accent)]"
-                  />
-                ) : null}
               </Link>
             </li>
           );
         })}
+
+        {/* One shared indicator. A rule under the label rather than a filled
+          * pill: less chrome, and it reads as "you are here" without competing
+          * with the accent reserved for actions. */}
+        {marker ? (
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-[13px] h-[2px] rounded-full bg-[var(--accent)]"
+            ref={(node) => {
+              if (!node) return;
+              // Animate only once a position is already established, so the
+              // indicator glides between destinations but never slides in from
+              // nowhere on the first paint.
+              const shouldAnimate = placed.current;
+              node.style.transition = shouldAnimate
+                ? "left var(--d-slow) var(--e-out), width var(--d-slow) var(--e-out)"
+                : "none";
+              placed.current = true;
+            }}
+            style={{
+              left: marker.left + 10,
+              width: Math.max(0, marker.width - 20),
+            }}
+          />
+        ) : null}
       </ul>
     </nav>
   );

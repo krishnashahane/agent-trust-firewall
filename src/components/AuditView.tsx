@@ -10,6 +10,7 @@ import {
   VerdictBadge,
 } from "@/components/ui";
 import { Counter, useReducedMotion } from "@/components/motion";
+import { CopyValue } from "@/components/CopyValue";
 import type { Verdict } from "@/lib/atf/types";
 
 interface AuditRecord {
@@ -206,13 +207,25 @@ export function AuditView() {
               </p>
 
               <dl className="mono mt-2.5 space-y-1 text-[10.5px] text-[var(--text-muted)]">
-                <div className="break-all">
-                  <dt className="inline text-[var(--text-faint)]">stored hash </dt>
-                  <dd className="inline">{tamper.expectedHash.slice(0, 40)}…</dd>
+                <div className="flex gap-1">
+                  <dt className="shrink-0 text-[var(--text-faint)]">stored hash</dt>
+                  <dd className="min-w-0">
+                    <CopyValue
+                      value={tamper.expectedHash}
+                      display={`${tamper.expectedHash.slice(0, 34)}…`}
+                      title="stored hash"
+                    />
+                  </dd>
                 </div>
-                <div className="break-all">
-                  <dt className="inline text-[var(--text-faint)]">recomputed </dt>
-                  <dd className="inline">{tamper.recomputedHash.slice(0, 40)}…</dd>
+                <div className="flex gap-1">
+                  <dt className="shrink-0 text-[var(--text-faint)]">recomputed</dt>
+                  <dd className="min-w-0">
+                    <CopyValue
+                      value={tamper.recomputedHash}
+                      display={`${tamper.recomputedHash.slice(0, 34)}…`}
+                      title="recomputed hash"
+                    />
+                  </dd>
                 </div>
               </dl>
 
@@ -325,10 +338,7 @@ export function AuditView() {
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
                 {records.map((record) => (
-                  <tr
-                    key={record.id}
-                    className="transition-colors duration-[var(--d-fast)] hover:bg-[var(--bg-hover)]"
-                  >
+                  <tr key={record.id} className="row-hover">
                     <td className="mono tnum px-3 py-2.5 pl-4 text-[var(--text-faint)] sm:pl-5">
                       {record.seq}
                     </td>
@@ -339,11 +349,19 @@ export function AuditView() {
                       {record.agentId}
                     </td>
                     <td className="mono px-3 py-2.5">{record.tool}</td>
-                    <td className="mono px-3 py-2.5 text-[var(--text-faint)]">
-                      {record.requestDigest.slice(0, 14)}…
+                    <td className="px-3 py-2.5 text-[var(--text-faint)]">
+                      <CopyValue
+                        value={record.requestDigest}
+                        display={`${record.requestDigest.slice(0, 14)}…`}
+                        title="request digest"
+                      />
                     </td>
-                    <td className="mono px-3 py-2.5 text-[var(--text-faint)]">
-                      {record.previousHash.slice(0, 14)}…
+                    <td className="px-3 py-2.5 text-[var(--text-faint)]">
+                      <CopyValue
+                        value={record.previousHash}
+                        display={`${record.previousHash.slice(0, 14)}…`}
+                        title="previous hash"
+                      />
                     </td>
                   </tr>
                 ))}

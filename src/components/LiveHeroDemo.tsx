@@ -170,24 +170,25 @@ export function LiveHeroDemo() {
       </header>
 
       <div className="px-4 py-4 sm:px-5">
-        <dl className="mono space-y-1 text-[11.5px] leading-relaxed">
-          <div className="flex gap-2">
-            <dt className="w-14 shrink-0 text-[var(--text-faint)]">scenario</dt>
-            <dd className="min-w-0 truncate">
-              {outcome ? outcome.scenario.title : "…"}
-            </dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="w-14 shrink-0 text-[var(--text-faint)]">checks</dt>
-            <dd className="min-w-0 truncate">
-              {decision ? decision.risk.contributions.length : 7} signals scored
-            </dd>
-          </div>
+        {/* A two-column grid rather than fixed-width labels: the label column
+          * sizes to its longest entry, so no amount of font substitution can
+          * push a label into its value the way a hard-coded width did. */}
+        <dl className="mono grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11.5px] leading-relaxed">
+          <dt className="text-[var(--text-faint)]">scenario</dt>
+          <dd className="min-w-0 truncate">
+            {outcome ? outcome.scenario.title : "…"}
+          </dd>
+
+          <dt className="text-[var(--text-faint)]">checks</dt>
+          <dd className="min-w-0 truncate">
+            {decision ? decision.risk.contributions.length : 7} signals scored
+          </dd>
+
           {outcome?.intel ? (
-            <div className="flex gap-2">
-              <dt className="w-14 shrink-0 text-[var(--text-faint)]">from</dt>
+            <>
+              <dt className="text-[var(--text-faint)]">from</dt>
               <dd className="min-w-0 truncate">{outcome.intel.ip}</dd>
-            </div>
+            </>
           ) : null}
         </dl>
 

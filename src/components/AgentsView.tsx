@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { Counter } from "@/components/motion";
 import { Sparkline } from "@/components/Sparkline";
+import { CopyValue } from "@/components/CopyValue";
 import type { Verdict } from "@/lib/atf/types";
 
 interface AgentIntel {
@@ -334,8 +335,13 @@ export function AgentsView() {
                   </>
                 ) : null}
 
-                <p className="mono mt-2.5 break-all text-[10px] text-[var(--text-faint)]">
-                  capability root {agent.capabilityRoot.slice(0, 40)}…
+                <p className="mt-2.5 flex items-center gap-1 text-[10px] text-[var(--text-faint)]">
+                  capability root
+                  <CopyValue
+                    value={agent.capabilityRoot}
+                    display={`${agent.capabilityRoot.slice(0, 34)}…`}
+                    title="capability root"
+                  />
                 </p>
               </li>
             );

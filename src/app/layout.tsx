@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileNav, Nav } from "@/components/Nav";
 import { SiteFooter, GITHUB_PROFILE } from "@/components/SiteFooter";
+import { PageTransition } from "@/components/PageTransition";
 import "./globals.css";
 
 const SITE = "https://agentwall-pbl.vercel.app";
@@ -101,7 +102,9 @@ export default async function RootLayout({
           </div>
         </header>
 
-        <div id="main">{children}</div>
+        <div id="main">
+          <PageTransition>{children}</PageTransition>
+        </div>
 
         <SiteFooter />
       </body>

@@ -287,6 +287,16 @@ hr {
   transition-duration: var(--d-fast);
 }
 
+/* Stat tiles are not clickable, so they must not lift — but a hairline that
+ * responds keeps the grid from feeling inert. */
+.stat-tile {
+  transition: border-color var(--d) var(--e-out);
+}
+
+.stat-tile:hover {
+  border-color: var(--border-strong);
+}
+
 /*
  * Touch target sizing.
  *
@@ -382,6 +392,93 @@ input[type="range"]:hover::-webkit-slider-thumb {
 input[type="range"]:focus-visible::-webkit-slider-thumb {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/*
+ * Interaction feedback.
+ *
+ * The house style for hover is *precision*, not decoration: a hairline that
+ * brightens, a 2px shift, an accent rule that grows from the edge. Deliberately
+ * no glow, no gradient sweep, no scale-up on cards. This is a security console;
+ * it should feel like an instrument responding, not a landing page performing.
+ */
+
+/* Rows in the traffic and audit tables. The accent rule grows from the leading
+ * edge so the eye is drawn along the row it is about to read, and the row
+ * itself does not move — shifting text under a cursor makes scanning harder. */
+.row-hover {
+  position: relative;
+  transition: background var(--d-fast) var(--e-out);
+}
+
+.row-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform var(--d) var(--e-out);
+  pointer-events: none;
+}
+
+.row-hover:hover::before,
+.row-hover:focus-within::before {
+  transform: scaleY(1);
+}
+
+.row-hover:hover,
+.row-hover:focus-within {
+  background: var(--bg-hover);
+}
+
+/* Copyable values (hashes, keys, addresses). A security console asks people to
+ * compare these against another source constantly; making them click-to-copy
+ * is the single highest-value micro-interaction on the site. */
+.copyable {
+  cursor: copy;
+  border-radius: 4px;
+  padding: 1px 3px;
+  margin: 0 -3px;
+  transition:
+    background var(--d-fast) var(--e-out),
+    color var(--d-fast) var(--e-out);
+}
+
+.copyable:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Links that reveal an underline rather than simply recolouring. */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size var(--d) var(--e-out);
+}
+
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+/* Route transitions: a short settle, so a navigation reads as arriving
+ * somewhere rather than as a repaint. Short enough never to be waited on. */
+@keyframes atf-page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page-in {
+  animation: atf-page-in 260ms var(--e-out) both;
 }
 
 /* ------------------------------------------------------------- motion --- */
@@ -543,5 +640,13 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 
   .card-interactive:hover {
     transform: none;
+  }
+
+  .page-in {
+    animation: none;
+  }
+
+  .row-hover::before {
+    transition: none;
   }
 }
