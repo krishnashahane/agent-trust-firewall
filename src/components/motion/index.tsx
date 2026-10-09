@@ -3,10 +3,11 @@
 /**
  * The motion system.
  *
- * Four primitives cover every animation in the product: reveal-on-scroll,
- * tweened numbers, staggered sequences, and a reduced-motion hook the others
- * are built on. Durations and easings come from CSS tokens in globals.css, so
- * timing is tuned in one place rather than per component.
+ * A handful of primitives cover every animation in the product:
+ * reveal-on-scroll, tweened numbers, step sequences, a debounce, and a
+ * reduced-motion hook the others are built on. Durations and easings come from
+ * CSS tokens in globals.css, so timing is tuned in one place rather than per
+ * component.
  *
  * Why no animation library: everything here is transform/opacity driven by CSS
  * transitions and one IntersectionObserver, which is a few hundred bytes and
@@ -19,9 +20,7 @@
  */
 
 import {
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -70,7 +69,7 @@ const FAILSAFE_MS = 1200;
  * Fade + rise an element in the first time it enters the viewport.
  *
  * Deliberately one-shot: re-animating on every scroll pass turns a page into a
- * fidget toy. `delay` is what `Stagger` uses to cascade siblings.
+ * fidget toy. `delay` offsets the transition so siblings can cascade.
  */
 export function Reveal({
   children,
@@ -146,29 +145,6 @@ export function Reveal({
     >
       {children}
     </Tag>
-  );
-}
-
-/** Cascade a list of children, 40ms apart, capped so long lists stay snappy. */
-export function Stagger({
-  children,
-  step = 40,
-  max = 10,
-  className = "",
-}: {
-  children: ReactNode[];
-  step?: number;
-  max?: number;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      {children.map((child, index) => (
-        <Reveal key={index} delay={Math.min(index, max) * step}>
-          {child}
-        </Reveal>
-      ))}
-    </div>
   );
 }
 
@@ -297,9 +273,3 @@ export function useDebounced<T>(value: T, delayMs = 260): T {
   return debounced;
 }
 
-/** Stable id for restarting sequences; increments on demand. */
-export function useRunId(): [number, () => void] {
-  const [id, setId] = useState(0);
-  const bump = useCallback(() => setId((n) => n + 1), []);
-  return useMemo(() => [id, bump], [id, bump]);
-}

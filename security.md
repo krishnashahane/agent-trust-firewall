@@ -93,9 +93,9 @@ Stated here and on the landing page rather than glossed over.
 ## Verifying the claims yourself
 
 ```bash
-npm run test     # 163 tests, including every attack scenario as an assertion
+npm run test     # 172 tests, including every attack scenario as an assertion
 npm run verify   # 25 security invariants, printed one per line
-npm audit        # 0 vulnerabilities
+npm audit --omit=dev   # 0 vulnerabilities in shipped dependencies
 ```
 
 `npm run verify` checks the load-bearing properties directly: an unenrolled agent

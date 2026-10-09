@@ -40,7 +40,7 @@ nothing in `src/lib/atf/` imports Next.js.
 | `src/lib/atf/audit/chain.ts` | SHA-256 hash-chained log. `verifyChain()` names the exact record that broke. |
 | `src/lib/atf/session.ts` | Per-visitor config sandboxes. Bounded, TTL'd, cookie-keyed; keeps one visitor's tuning off another's screen. |
 | `src/lib/atf/store/postgres.ts` | Durable store (Neon). Nonce consumption is one conditional DELETE…RETURNING so a replay cannot win a race; `seq` is the audit primary key so a concurrent append fails rather than forking the chain. |
-| `src/lib/atf/store/port.ts` | The storage interface. `memory.ts` is the only implementation; a Postgres one drops in without touching the engine. |
+| `src/lib/atf/store/port.ts` | The storage interface. `memory.ts` (in-process) and `postgres.ts` (durable) both implement it; `gateway.ts` picks one from `DATABASE_URL` without the engine knowing which. |
 | `src/lib/atf/mcp/server.ts` | A real MCP stdio server. Every `tools/call` routes through `decide()`; blocked calls never reach the tool. |
 | `src/lib/atf/client.ts` | Agent-side SDK. Holds the secret key, builds the proofs, seals the envelope. There is no field in the protocol that could carry a secret key. |
 
@@ -139,7 +139,7 @@ npm run dev        # local dev
 npm run build      # production build
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm run test       # 163 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
+npm run test       # 172 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
 npm run verify     # 25 security invariants, asserted outside the test runner
 npm run mcp        # the MCP stdio server
 ```

@@ -88,7 +88,7 @@ alternative is shipping no critical CSS.
 
 ## Residual risk
 
-- In-process storage: history is lost on cold start (see `store/port.ts`).
+- Without `DATABASE_URL`, storage is in-process and history is lost on cold start (see `store/port.ts`).
 - Per-instance rate limiting: a multi-instance deployment multiplies the limit.
 - Heuristic payload analysis: pattern lists will always lag novel phrasings.
 - The gateway is a trusted endpoint for the outer envelope, by necessity.
