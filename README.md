@@ -190,10 +190,26 @@ client at:
 }
 ```
 
-The server fronts three demo tools (`search.query`, `payments.charge`,
-`storage.read`) and runs as a demo agent holding a subset of capabilities, so
-you can see one call allowed and another blocked. It keeps its own in-process
-store.
+By default the server fronts three demo tools (`search.query`,
+`payments.charge`, `storage.read`) and runs as a demo agent holding a subset of
+capabilities, so you can see one call allowed and another blocked.
+
+**In front of a real MCP server.** Set `ATF_MCP_UPSTREAM` to the upstream's
+command as a JSON array, and grant tools with `ATF_MCP_GRANTS`:
+
+```bash
+ATF_MCP_UPSTREAM='["npx","-y","@modelcontextprotocol/server-filesystem","/tmp"]' \
+ATF_MCP_GRANTS="mcp:read_file,mcp:list_directory" \
+npm run mcp
+```
+
+ATF launches the upstream (without a shell), lists its tools and exposes them
+unchanged. Upstream tool `read_file` requires capability `mcp:read_file`;
+`mcp:*` grants every tool, and **nothing is granted by default**. An allowed call
+is forwarded and the upstream's own result comes back verbatim, with the
+verdict in `_meta["agent-trust-firewall"]`. A blocked call, or a flagged one —
+there is no human on stdio to approve it — is held and never reaches the
+upstream. Either mode keeps its own in-process store.
 
 ## Architecture
 
