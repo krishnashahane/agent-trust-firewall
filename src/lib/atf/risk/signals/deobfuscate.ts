@@ -105,26 +105,27 @@ export function views(text: string): View[] {
     if (decoded) raw.push({ text: decoded, disguise: "base64 encoding", raw: true });
   }
 
+  // Each step undoes one more kind of disguise. Steps are tried in order and
+  // the first match wins, so a phrase written plainly is reported plainly even
+  // if punctuation elsewhere in the text was tidied by a later step.
   const folded: View[] = [];
+  const push = (text: string, tags: string[]) => {
+    if (folded.some((v) => v.text === text)) return;
+    folded.push({ text, disguise: tags.join(" and ") || null, raw: false });
+  };
   for (const view of raw) {
     const base = canonical(view.text);
     const tags = view.disguise ? [view.disguise] : [];
     if (base !== view.text.toLowerCase()) tags.push("look-alike or invisible characters");
-    const words = base.replace(/\s+/g, " ").trim();
-    const separated = spaced(base);
-    if (separated !== words) tags.push("punctuation between words");
-    const joined = joinSingles(separated);
-    if (joined !== separated) tags.push("spaced-out letters");
-    folded.push({ text: joined, disguise: tags.join(" and ") || null, raw: false });
+    push(base.replace(/\s+/g, " ").trim(), tags);
 
-    const leet = joinSingles(spaced(mapChars(base, LEET)));
-    if (leet !== joined) {
-      folded.push({
-        text: leet,
-        disguise: [...tags, "numbers in place of letters"].join(" and "),
-        raw: false,
-      });
-    }
+    const separated = spaced(base);
+    push(separated, [...tags, "punctuation between words"]);
+
+    const joined = joinSingles(separated);
+    push(joined, [...tags, "spaced-out letters"]);
+
+    push(joinSingles(spaced(mapChars(base, LEET))), [...tags, "numbers in place of letters"]);
   }
   return [...raw, ...folded];
 }
