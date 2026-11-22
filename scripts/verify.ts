@@ -24,6 +24,7 @@ import { verifyChain, hashRecord } from "../src/lib/atf/audit/chain.ts";
 import { capabilityRoot, proveCapability } from "../src/lib/atf/identity/merkle.ts";
 import { isPublicIpv4 } from "../src/lib/atf/osint/net.ts";
 import { intelSignal } from "../src/lib/atf/risk/signals/intel.ts";
+import { checkAdmin } from "../src/lib/atf/admin.ts";
 import type { Store } from "../src/lib/atf/store/port.ts";
 
 let failures = 0;
@@ -136,6 +137,25 @@ async function main(): Promise<void> {
 
   // ---------------------------------------------------------- capability
   section("Authority cannot be exceeded");
+  {
+    assert(
+      "with no admin token configured, enrolment is disabled rather than open",
+      checkAdmin("Bearer anything", "") === "disabled",
+    );
+    const token = "v".repeat(64);
+    assert(
+      "an anonymous caller cannot enrol an agent and grant it capabilities",
+      checkAdmin(null, token) === "unauthorized" &&
+        checkAdmin("Bearer " + "w".repeat(64), token) === "unauthorized" &&
+        checkAdmin(`Bearer ${token}`, token) === "ok",
+    );
+
+    const stored = JSON.stringify(await (await makeWorld()).store.getAgent("agent-1"));
+    assert(
+      "the firewall stores a capability root, never the capability list",
+      CAPS.every((capability) => !stored.includes(capability)),
+    );
+  }
   {
     const { store, creds } = await makeWorld();
 

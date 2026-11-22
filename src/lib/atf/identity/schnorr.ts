@@ -46,6 +46,20 @@ export function generateKeyPair(): KeyPair {
   };
 }
 
+/**
+ * A key the firewall can safely enrol: a canonical encoding of a point in the
+ * prime-order subgroup. Small-order points (including the identity) are
+ * refused — a proof against one says nothing about who holds a secret.
+ */
+export function isValidPublicKey(hex: string): boolean {
+  try {
+    const P = Point.fromHex(hex);
+    return !P.isSmallOrder() && P.isTorsionFree() && P.toHex() === hex.toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
 export function publicKeyFor(secretKey: string): string {
   return Point.BASE.multiply(parseScalar(secretKey)).toHex();
 }

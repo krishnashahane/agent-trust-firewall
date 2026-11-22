@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   generateKeyPair,
+  isValidPublicKey,
   prove,
   publicKeyFor,
   verify,
@@ -296,5 +297,19 @@ describe("sealed fields", () => {
     expect(shannonEntropy("abcd")).toBeGreaterThan(1.9);
     expect(describeField("hello@example.com").shape).toBe("identifier");
     expect(describeField('{"a":1}').shape).toBe("structured");
+  });
+});
+
+describe("enrolment key validation", () => {
+  it("accepts a freshly generated public key", () => {
+    expect(isValidPublicKey(generateKeyPair().publicKey)).toBe(true);
+  });
+
+  it("refuses the identity point, small-order points and garbage", () => {
+    const identity = "01" + "00".repeat(31);
+    expect(isValidPublicKey(identity)).toBe(false);
+    expect(isValidPublicKey("00".repeat(32))).toBe(false);
+    expect(isValidPublicKey("ff".repeat(32))).toBe(false);
+    expect(isValidPublicKey("not hex")).toBe(false);
   });
 });

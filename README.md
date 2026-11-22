@@ -94,12 +94,20 @@ const post = (path: string, body: unknown) =>
 const signing = generateKeyPair();
 const encryption = generateEncryptionKeyPair();
 const capabilities = ["calendar:createEvent", "search:query"];
-await post("/api/agents/register", {
+// Enrolment is an operator action: it needs ATF_ADMIN_TOKEN.
+await fetch(BASE + "/api/agents/register", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    authorization: `Bearer ${process.env.ATF_ADMIN_TOKEN}`,
+  },
+  body: JSON.stringify({
   agentId: "my-agent",
   displayName: "My agent",
   signingPublicKey: signing.publicKey,
   encryptionPublicKey: encryption.publicKey,
   capabilityRoot: capabilityRoot(capabilities),
+  }),
 });
 
 // 2. Per call: get a single-use challenge, prove, seal, submit.
@@ -138,7 +146,7 @@ A BLOCK on the plaintext path returns HTTP 403.
 |---|---|---|
 | `/api/health` | GET | Liveness, storage backend, audit chain validity |
 | `/api/agents` | GET | Enrolled fleet with intel |
-| `/api/agents/register` | POST | Enrol an agent (public keys + capabilities) |
+| `/api/agents/register` | POST | Enrol an agent (public keys + capability root). Requires `Authorization: Bearer $ATF_ADMIN_TOKEN` |
 | `/api/agents/challenge` | POST | Issue a single-use, agent-bound challenge |
 | `/api/gateway/pubkey` | GET | The gateway's X25519 public key |
 | `/api/gateway/intercept` | POST | Submit a call for a decision |
@@ -222,13 +230,14 @@ prefix any of them with `NEXT_PUBLIC_`. See `.env.example`.
 
 | Variable | Effect when set |
 |---|---|
+| `ATF_ADMIN_TOKEN` | Enables agent enrolment for callers presenting it as a bearer token (32+ chars). **Unset means enrolment is disabled** |
 | `DATABASE_URL` | Durable Postgres (Neon) storage instead of the in-process store |
 | `ATF_DEMO_SEED` | Derives the demo fleet's keys deterministically. **Required with a shared database**, so every instance signs with the keys that are enrolled |
 | `ATF_GATEWAY_SECRET_KEY` | Pins the gateway's X25519 keypair (64 hex chars). **Set it on any multi-instance deployment** — otherwise each instance has its own key and an envelope sealed to one cannot be opened by another |
 | `ABUSEIPDB_API_KEY` | Adds AbuseIPDB to threat intel |
 | `OTX_API_KEY` | Adds AlienVault OTX to threat intel |
 
-Generate the two secrets with `openssl rand -hex 32`.
+Generate the secrets with `openssl rand -hex 32`.
 
 ## Deployment (Vercel)
 
@@ -237,6 +246,7 @@ vercel link                      # once
 vercel integration add neon      # provisions Postgres, injects DATABASE_URL
 vercel env add ATF_DEMO_SEED production
 vercel env add ATF_GATEWAY_SECRET_KEY production
+vercel env add ATF_ADMIN_TOKEN production
 vercel env pull .env.local
 npm run seed                     # once per fresh database: ~500 statements, ~45s
 vercel --prod
@@ -301,6 +311,7 @@ rather than zkSNARKs, and why hard rules sit outside the score.
 | Attack-range calls intermittently fail with `identity-unproven` | `ATF_DEMO_SEED` is unset with a shared database, so instances fight over the fleet's keys. Set it and redeploy |
 | An agent gets `Envelope could not be opened.` intermittently | `ATF_GATEWAY_SECRET_KEY` is unset on a multi-instance deployment. Pin it and redeploy. `/api/health` reports `gatewayKeyPinned` |
 | A legitimate call is blocked with `capability-escalation` | The proved capability does not match the tool. Grant `namespace:action` matching the tool name, or `namespace:*` |
+| `503 Enrolment is disabled` / `401` on register | Set `ATF_ADMIN_TOKEN` (32+ chars) and send it as `Authorization: Bearer …` |
 | `replayed-challenge` | Each challenge is single-use and expires. Request a fresh one per call |
 | `403 Cross-site requests are not accepted here.` | A browser on another origin called a state-changing route. Call from the same origin or from a server (no `Origin` header) |
 | `429 Too many requests` | Per-client, per-route rate limit. Wait a minute |

@@ -1,6 +1,6 @@
 import { getGateway } from "@/lib/atf/gateway";
 import { DuplicateAgentError, registerAgent, registrationSchema } from "@/lib/atf/identity/registry";
-import { fail, HttpError, limit, ok, originGuard, readJson } from "@/lib/guard";
+import { fail, HttpError, limit, ok, originGuard, readJson, requireAdmin } from "@/lib/guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,6 +9,8 @@ export async function POST(request: Request) {
   try {
     originGuard(request);
     limit(request, "register", 10);
+    // Before the body is read: an unauthenticated caller costs nothing more.
+    requireAdmin(request);
     const input = await readJson(request, registrationSchema);
     const gateway = await getGateway();
     const agent = await registerAgent(gateway.store, input);

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import {
   HttpError,
@@ -6,6 +6,7 @@ import {
   limit,
   originGuard,
   readJson,
+  requireAdmin,
 } from "@/lib/guard";
 
 const req = (init: { origin?: string; host?: string; body?: string; ip?: string }) => {
@@ -146,5 +147,47 @@ describe("body parsing", () => {
     await expect(readJson(req({ host: "h", body: "null" }), schema)).rejects.toThrow(
       HttpError,
     );
+  });
+});
+
+describe("admin enrolment guard", () => {
+  const TOKEN = "t".repeat(48);
+  const withAuth = (value?: string) =>
+    new Request("https://example.test/api/agents/register", {
+      method: "POST",
+      headers: value ? { authorization: value } : {},
+    });
+  const status = (fn: () => void) => {
+    try {
+      fn();
+      return 200;
+    } catch (error) {
+      return (error as HttpError).status;
+    }
+  };
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("is disabled, not open, when no token is configured", () => {
+    vi.stubEnv("ATF_ADMIN_TOKEN", "");
+    expect(status(() => requireAdmin(withAuth(`Bearer ${TOKEN}`)))).toBe(503);
+  });
+
+  it("refuses to run with a token too short to be a secret", () => {
+    vi.stubEnv("ATF_ADMIN_TOKEN", "short");
+    expect(status(() => requireAdmin(withAuth("Bearer short")))).toBe(503);
+  });
+
+  it("rejects a missing, malformed or wrong token", () => {
+    vi.stubEnv("ATF_ADMIN_TOKEN", TOKEN);
+    expect(status(() => requireAdmin(withAuth()))).toBe(401);
+    expect(status(() => requireAdmin(withAuth(TOKEN)))).toBe(401);
+    expect(status(() => requireAdmin(withAuth(`Bearer ${TOKEN}x`)))).toBe(401);
+    expect(status(() => requireAdmin(withAuth("Bearer ")))).toBe(401);
+  });
+
+  it("accepts the configured token", () => {
+    vi.stubEnv("ATF_ADMIN_TOKEN", TOKEN);
+    expect(status(() => requireAdmin(withAuth(`Bearer ${TOKEN}`)))).toBe(200);
   });
 });

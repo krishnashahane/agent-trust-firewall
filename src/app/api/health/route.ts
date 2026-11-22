@@ -1,6 +1,6 @@
 import { getGateway } from "@/lib/atf/gateway";
 import { verifyChain } from "@/lib/atf/audit/chain";
-import { fail, limit, ok } from "@/lib/guard";
+import { adminConfigured, fail, limit, ok } from "@/lib/guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +26,7 @@ export async function GET(request: Request) {
           ? "postgres (durable across restarts)"
           : "in-process (resets on cold start)",
       gatewayKeyPinned: Boolean(process.env.ATF_GATEWAY_SECRET_KEY),
+      enrolmentEnabled: adminConfigured(),
     });
   } catch (error) {
     return fail(error);

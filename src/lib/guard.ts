@@ -12,6 +12,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { bytesToHex, random } from "./atf/crypto/primitives.ts";
+import { adminConfigured, checkAdmin } from "./atf/admin.ts";
 
 export const JSON_LIMIT_BYTES = 512 * 1024;
 
@@ -70,6 +71,24 @@ export function originGuard(request: Request): void {
   const host = request.headers.get("host");
   if (!host || originHost !== host) {
     throw new HttpError(403, "Cross-site requests are not accepted here.");
+  }
+}
+
+/** ------------------------------------------------------------- admin auth */
+
+export { adminConfigured };
+
+/** Gate an operator-only route behind `Authorization: Bearer <ATF_ADMIN_TOKEN>`. */
+export function requireAdmin(request: Request): void {
+  const result = checkAdmin(request.headers.get("authorization"));
+  if (result === "disabled") {
+    throw new HttpError(
+      503,
+      "Enrolment is disabled on this deployment: ATF_ADMIN_TOKEN is not configured.",
+    );
+  }
+  if (result === "unauthorized") {
+    throw new HttpError(401, "A valid admin token is required to enrol agents.");
   }
 }
 

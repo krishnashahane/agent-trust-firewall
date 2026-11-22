@@ -49,6 +49,11 @@ nothing in `src/lib/atf/` imports Next.js.
 Read `src/lib/guard.ts` before touching any API route. Every route composes, in
 this order: `originGuard` → `limit` → `readJson(schema)`.
 
+- **Enrolment is an operator action.** `/api/agents/register` requires
+  `Authorization: Bearer $ATF_ADMIN_TOKEN` (`requireAdmin` in `guard.ts`) and is
+  disabled, not open, when the token is unset. Open enrolment would let anyone
+  grant themselves any capability and pass every check honestly. Enrolment
+  carries a capability *root*; the firewall never holds the capability list.
 - **Hard rules are not tunable.** Unknown agent, revoked key, unverified proof,
   replayed challenge, ungranted capability ⇒ BLOCK at *every* configuration.
   `/api/config` can move weights and thresholds; it cannot disable these.

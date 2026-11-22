@@ -7,6 +7,7 @@
  * firewall later learns one capability per call, from the call's own proof.
  */
 import { z } from "zod";
+import { isValidPublicKey } from "./schnorr.ts";
 import type { Store } from "../store/port.ts";
 import type { AgentRecord } from "../types.ts";
 
@@ -23,7 +24,7 @@ export const registrationSchema = z.object({
     .max(64)
     .regex(/^[a-z0-9][a-z0-9._-]*$/i, "agent ids are alphanumeric with . _ -"),
   displayName: z.string().min(1).max(80),
-  signingPublicKey: hex(32),
+  signingPublicKey: hex(32).refine(isValidPublicKey, "not a valid ed25519 public key"),
   encryptionPublicKey: hex(32),
   /** Merkle root over the granted capabilities, from `capabilityRoot()` */
   capabilityRoot: hex(32),
