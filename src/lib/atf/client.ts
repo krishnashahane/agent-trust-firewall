@@ -2,8 +2,8 @@
  * Agent-side SDK.
  *
  * This is the code an agent runs to make a call through the firewall. It holds
- * the agent's secret key, requests a challenge, produces the zero-knowledge
- * proof and the capability proof, and seals the whole thing to the gateway.
+ * the agent's secret key, requests a challenge, produces the proof of key
+ * possession and the capability proof, and seals the whole thing to the gateway.
  *
  * It lives in the same repo as the firewall for convenience, but note what it
  * does NOT do: it never transmits the secret key, and there is no field in the

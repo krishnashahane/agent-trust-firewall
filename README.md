@@ -22,8 +22,9 @@ Every intercepted call must clear four checks before it runs:
 1. **Sealed in transit** — the agent encrypts the call with a fresh key each time
    (X25519 → HKDF-SHA256 → XChaCha20-Poly1305). Fields it marks sensitive are
    encrypted to the *destination* and pass through the firewall unreadable.
-2. **Identity, proved not claimed** — a Schnorr zero-knowledge proof of key
-   possession. The key is never transmitted, and the proof is bound to one
+2. **Identity, proved not claimed** — a Schnorr proof of key possession
+   (equivalently, a Schnorr signature over the challenge and the request). The
+   key is never transmitted, and the proof is bound to one
    single-use challenge *and* one specific request, so it cannot be replayed or
    moved onto a different call.
 3. **Authority, minimally disclosed** — a Merkle inclusion proof for the one
@@ -208,7 +209,7 @@ reason, never a silent pass.
 
 | Path | Role |
 |---|---|
-| `src/lib/atf/identity/` | Schnorr NIZK, Merkle capability proofs, single-use nonces, agent registry |
+| `src/lib/atf/identity/` | Schnorr proofs of possession, Merkle capability proofs, single-use nonces, agent registry |
 | `src/lib/atf/crypto/` | Sealed envelopes and destination-sealed fields |
 | `src/lib/atf/risk/` | One file per signal, plus a pure weighted engine |
 | `src/lib/atf/interceptor/` | The decision path, hard rules and escalations |

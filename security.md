@@ -20,7 +20,7 @@ not just its firewall logic — is in scope and welcome.
 - **No secret is ever returned to a client.** The gateway's X25519 secret lives
   only in `src/lib/atf/gateway.ts` and no route serialises it. Agent secret keys
   never enter the system at all — an agent proves possession with a
-  zero-knowledge proof, and the protocol has no field that could carry a key.
+  proof of key possession, and the protocol has no field that could carry a key.
 - **No unauthenticated write touches shared state.** Risk configuration is
   sandboxed per visitor behind an opaque HttpOnly cookie; the shared config is
   read-only. Hard rules stay in force in every sandbox.
@@ -62,7 +62,7 @@ Nothing here is hand-rolled maths.
 
 | Purpose | Construction |
 |---|---|
-| Identity | Schnorr NIZK (Fiat–Shamir) over ed25519's prime-order group |
+| Identity | Schnorr proof of possession (Fiat–Shamir; equivalently a Schnorr signature) over ed25519's prime-order group |
 | Selective disclosure | Merkle tree, domain-separated leaf and node hashes |
 | Transport | X25519 ECDH → HKDF-SHA256 → XChaCha20-Poly1305 AEAD |
 | Integrity | SHA-256 hash chain |

@@ -50,3 +50,18 @@ whole grant set — genuine minimum disclosure at the layer where it helps.
 - Dependencies stay at three audited `@noble` packages.
 - The agent's *identity* is not hidden from the firewall. That is deliberate and
   documented, not an oversight — see `docs/security.md`.
+
+## Correction (2026-11)
+
+The rationale above says a signature over a challenge "is not a zero-knowledge
+proof". That is wrong. A Fiat–Shamir Schnorr proof of knowledge bound to a
+message *is* a Schnorr signature; options 2 and 3 are the same construction
+under different names. It is zero-knowledge about the secret key in the
+random-oracle model, and so is a Schnorr signature.
+
+The decision stands, because the construction is right for the job: small,
+audited primitives, no trusted setup, and a proof bound to one challenge and
+one request. What changes is the language. User-facing copy now says "proof of
+key possession", and technical docs say what it is: a Schnorr signature over
+`(nonce, requestDigest)`. ATF does not offer anonymous or privacy-preserving
+credentials, and should not be read as claiming to.

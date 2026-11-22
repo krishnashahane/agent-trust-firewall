@@ -38,7 +38,7 @@ export function hardRuleViolations(ctx: RequestContext): PolicyViolation[] {
   if (!ctx.identityProven) {
     violations.push({
       rule: "identity-unproven",
-      detail: "The zero-knowledge proof of key possession did not verify against the enrolled public key.",
+      detail: "The proof of key possession did not verify against the enrolled public key.",
     });
   }
 

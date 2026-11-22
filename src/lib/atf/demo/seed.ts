@@ -4,7 +4,7 @@
  * The dashboard should not open on an empty table, so at boot we enrol the demo
  * fleet and run a half-hour of ordinary traffic through the *real* decision
  * path: every seeded call issues a genuine challenge, produces a genuine
- * zero-knowledge proof and is scored by the genuine engine at a backdated
+ * proof of key possession and is scored by the genuine engine at a backdated
  * timestamp. Nothing here writes a verdict directly.
  *
  * The one concession to determinism is the random source: seeding uses a
@@ -109,7 +109,7 @@ export async function registerFleet(gateway: Gateway): Promise<void> {
 /**
  * Generate the baseline traffic.
  *
- * Every call here is a genuine challenge, a genuine zero-knowledge proof and a
+ * Every call here is a genuine challenge, a genuine proof of key possession and a
  * genuine scoring pass at a backdated timestamp — nothing writes a verdict
  * directly. That authenticity is also why it is expensive: against a remote
  * database it is roughly five hundred statements and tens of seconds, so it

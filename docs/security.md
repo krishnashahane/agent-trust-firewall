@@ -21,7 +21,7 @@ compromised, the firewall is compromised.
 
 | Attack | Defence | Where |
 |---|---|---|
-| Calling as an agent you are not | Schnorr NIZK against the enrolled public key | `identity/schnorr.ts` |
+| Calling as an agent you are not | Schnorr proof of possession (a signature over challenge + request) against the enrolled public key | `identity/schnorr.ts` |
 | Replaying a captured proof | Single-use, agent-bound, TTL'd challenge, spent on *attempt* | `identity/nonce.ts`, `store/memory.ts` |
 | Moving a proof onto a richer request | Challenge commits to the request digest | `schnorr.ts`, `interceptor/decide.ts` |
 | Using authority you were not granted | Merkle inclusion proof + namespace/action matching | `identity/merkle.ts`, `risk/signals/context.ts` |

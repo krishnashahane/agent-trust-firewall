@@ -58,7 +58,7 @@ describe("primitives", () => {
   });
 });
 
-describe("schnorr zero-knowledge proofs", () => {
+describe("schnorr proofs of key possession", () => {
   const keys = generateKeyPair();
   const nonce = "a".repeat(64);
   const digest = digestOf({ tool: "payments.charge" });

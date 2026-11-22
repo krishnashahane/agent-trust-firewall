@@ -17,7 +17,7 @@ import { useReducedMotion } from "@/components/motion";
  */
 
 const STAGES = [
-  { key: "identity", label: "Identity", sub: "ZK proof", x: 236 },
+  { key: "identity", label: "Identity", sub: "key proof", x: 236 },
   { key: "capability", label: "Capability", sub: "Merkle proof", x: 330 },
   { key: "risk", label: "Risk", sub: "7 signals", x: 424 },
   { key: "policy", label: "Policy", sub: "hard rules", x: 518 },

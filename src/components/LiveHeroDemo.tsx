@@ -13,7 +13,7 @@ interface Outcome {
 
 const CHECKS = [
   { label: "Envelope opened", detail: "decrypted inside the firewall" },
-  { label: "Identity proof checked", detail: "zero-knowledge, single-use" },
+  { label: "Identity proof checked", detail: "key proof, single-use" },
   { label: "Capability checked", detail: "Merkle inclusion proof" },
   { label: "Risk scored", detail: "seven signals, live intel" },
 ] as const;

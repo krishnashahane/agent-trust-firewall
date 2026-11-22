@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   keywords: [
     "AI agent security",
     "MCP",
-    "zero-knowledge proof",
+    "proof of possession",
     "agent firewall",
     "threat intelligence",
   ],

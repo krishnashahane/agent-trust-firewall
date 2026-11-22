@@ -101,7 +101,7 @@ export default function OpengraphImage() {
             </div>
           </div>
           <div style={{ fontSize: 18, color: "#838b99" }}>
-            Schnorr ZK identity / Merkle capabilities / live threat intel /
+            Schnorr key proofs / Merkle capabilities / live threat intel /
             hash-chained audit
           </div>
         </div>

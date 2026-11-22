@@ -27,7 +27,7 @@ nothing in `src/lib/atf/` imports Next.js.
 
 | Path | Role |
 |---|---|
-| `src/lib/atf/identity/schnorr.ts` | Fiat–Shamir Schnorr NIZK over ed25519. Proves key possession; the challenge binds the nonce **and** the request digest, so a proof works for exactly one call. |
+| `src/lib/atf/identity/schnorr.ts` | Fiat–Shamir Schnorr proof over ed25519 — equivalently a Schnorr signature over (nonce, request digest); call it a proof of key possession, not a ZK credential. Proves key possession; the challenge binds the nonce **and** the request digest, so a proof works for exactly one call. |
 | `src/lib/atf/identity/merkle.ts` | Capability grants as a Merkle tree. An agent discloses one capability plus an inclusion proof, never its whole grant set. Leaf and node hashes are domain-separated. |
 | `src/lib/atf/identity/nonce.ts` | Single-use, agent-bound, TTL'd challenges. The replay defence. |
 | `src/lib/atf/identity/registry.ts` | Enrolment, rotation, revocation. Public keys only. |

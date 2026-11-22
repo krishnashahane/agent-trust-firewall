@@ -42,7 +42,7 @@ export function identitySignal(ctx: RequestContext): SignalResult {
   const score = Math.min(1, Math.max(unproven, newness + staleness));
 
   const notes: string[] = [];
-  if (!ctx.identityProven) notes.push("its zero-knowledge proof did not verify");
+  if (!ctx.identityProven) notes.push("its proof of key possession did not verify");
   if (newness > 0.1) notes.push(`it was enrolled only ${Math.round(ageMs / 60_000)} minutes ago`);
   if (staleness > 0.05) notes.push(`its key has not been rotated in ${Math.round(sinceRotation / DAY)} days`);
 

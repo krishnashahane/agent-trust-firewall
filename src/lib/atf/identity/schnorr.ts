@@ -1,5 +1,10 @@
 /**
- * Zero-knowledge proof of secret-key possession.
+ * Proof of secret-key possession.
+ *
+ * Plainly: this is a Schnorr signature over (nonce, requestDigest). Phrased as
+ * a Fiat–Shamir proof of knowledge it is zero-knowledge about the key, which is
+ * the property that matters — but it is not a privacy-preserving credential and
+ * the firewall knows exactly which agent is calling. See ADR 0001.
  *
  * A non-interactive Schnorr proof (Fiat-Shamir) over ed25519's prime-order group.
  * The agent proves it knows the scalar `x` behind its public point `P = x*G`

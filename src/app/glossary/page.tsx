@@ -39,10 +39,10 @@ const TERMS: Term[] = [
       "An open protocol for connecting agents to tools and data. Because agent traffic funnels through it, it is the natural place to put a firewall — the same reason network firewalls sit on the network.",
   },
   {
-    term: "Zero-knowledge proof",
-    plain: "Proving you know a secret without revealing it.",
+    term: "Proof of key possession",
+    plain: "Proving you hold a secret key without sending it.",
     detail:
-      "ATF uses a Schnorr proof: the agent demonstrates it holds the private key matching its enrolled public key, using maths that convinces the firewall while transmitting nothing an eavesdropper could reuse. The key never crosses the wire, not even encrypted.",
+      "The agent signs the firewall's one-time challenge together with the exact request, using a Schnorr proof. Technically that is a Schnorr signature: it shows the agent holds the private key behind its enrolled public key and reveals nothing about the key itself. The key never crosses the wire, not even encrypted, and the proof is useless for any other request.",
   },
   {
     term: "Challenge / nonce",
