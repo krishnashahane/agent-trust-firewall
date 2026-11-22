@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     return ok({
       records: records.slice().reverse(),
       length: await gateway.store.auditLength(),
+      durable: gateway.storage === "postgres",
     });
   } catch (error) {
     return fail(error);

@@ -60,6 +60,7 @@ export function AuditView() {
   const reduced = useReducedMotion();
   const [records, setRecords] = useState<AuditRecord[] | null>(null);
   const [length, setLength] = useState(0);
+  const [durable, setDurable] = useState<boolean | null>(null);
   const [live, setLive] = useState<Verification | null>(null);
   const [tamper, setTamper] = useState<TamperDemo | null>(null);
   const [busy, setBusy] = useState(false);
@@ -77,10 +78,12 @@ export function AuditView() {
       const audit = (await auditResponse.json()) as {
         records: AuditRecord[];
         length: number;
+        durable: boolean;
       };
       const verification = (await verifyResponse.json()) as { live: Verification };
       setRecords(audit.records);
       setLength(audit.length);
+      setDurable(audit.durable);
       setLive(verification.live);
       setError(false);
     } catch {
@@ -125,7 +128,7 @@ export function AuditView() {
     <div className="space-y-4">
       <Panel
         title="Chain integrity"
-        caption="Each record commits to the hash of the one before it. Altering or deleting any past entry breaks every hash after it — which is something you can check rather than take on trust."
+        caption="Each record commits to the hash of the one before it. Altering or deleting any past entry breaks every hash after it."
         action={
           <Button
             variant="secondary"
@@ -240,7 +243,13 @@ export function AuditView() {
 
       <Panel
         title="Audit records"
-        caption="Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability. The chain is persisted, so it survives restarts and redeploys."
+        caption={`Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability.${
+          durable === true
+            ? " The chain is persisted, so it survives restarts and redeploys."
+            : durable === false
+              ? " This instance has no database configured, so the chain lives in memory and starts over when the server restarts."
+              : ""
+        }`}
       >
         {error ? (
           <EmptyState

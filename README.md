@@ -258,7 +258,7 @@ npm run typecheck
 npm run test           # 172 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
 npm run verify         # 25 security invariants, printed one per line
 npm run build
-npm audit --omit=dev   # 0 vulnerabilities in shipped dependencies
+npm audit              # 0 vulnerabilities, including dev tooling
 ```
 
 `npm run verify` checks the load-bearing properties directly, outside the test
@@ -267,10 +267,6 @@ cannot be moved onto a different request, a hard rule cannot be tuned away at
 any configuration, the firewall cannot open a destination-sealed field, an
 altered or deleted audit record is detected, and no argument value or secret key
 is ever retained.
-
-A full `npm audit` (including dev tooling) currently reports advisories in
-`braces`, reached only through `eslint-config-next` at lint time. No patched
-release exists yet; none of it ships in the application.
 
 ## Security
 

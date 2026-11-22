@@ -73,18 +73,6 @@
   --r-sm: 6px;
   --r: 8px;
   --r-lg: 12px;
-  --r-xl: 16px;
-
-  /* --- 8px spacing grid. Every gap/pad in the app resolves to one of these */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 24px;
-  --s-6: 32px;
-  --s-7: 48px;
-  --s-8: 64px;
-  --s-9: 96px;
 
   /* --- type scale -------------------------------------------------------- */
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
@@ -92,16 +80,7 @@
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
     "Liberation Mono", monospace;
 
-  --t-micro: 10.5px;
-  --t-xs: 11.5px;
-  --t-sm: 13px;
   --t-base: 14px;
-  --t-md: 15px;
-  --t-lg: 18px;
-  --t-xl: 22px;
-  --t-2xl: 30px;
-  --t-3xl: 40px;
-  --t-4xl: 52px;
 
   /* --- motion: durations and easings live here, not in components -------- */
   --e-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -258,33 +237,6 @@ hr {
   /* Just enough separation from the page to read as a surface rather than a
    * outlined rectangle. Any more and a console of twelve panels turns noisy. */
   box-shadow: var(--shadow-sm);
-}
-
-.panel-flat {
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  box-shadow: none;
-}
-
-/* Interactive cards lift; static ones must not, or the lift stops meaning
- * "you can click this". */
-.card-interactive {
-  transition:
-    transform var(--d) var(--e-out),
-    box-shadow var(--d) var(--e-out),
-    border-color var(--d) var(--e-out);
-}
-
-.card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lift);
-  border-color: var(--border-strong);
-}
-
-.card-interactive:active {
-  transform: translateY(0);
-  transition-duration: var(--d-fast);
 }
 
 /* Stat tiles are not clickable, so they must not lift — but a hairline that
@@ -636,10 +588,6 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   .skeleton {
     animation: none;
     background: var(--bg-sunken);
-  }
-
-  .card-interactive:hover {
-    transform: none;
   }
 
   .page-in {

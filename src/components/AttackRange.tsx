@@ -119,7 +119,7 @@ export function AttackRange() {
     <div className="grid gap-4 lg:grid-cols-[340px_1fr] lg:items-start">
       <Panel
         title="Adversaries"
-        caption="Each is built for real and sent through the live firewall. Nothing is pre-scripted."
+        caption="Each runs through the same decision path as real traffic."
       >
         {scenarios === null ? (
           <LoadingRegion label="Loading adversaries">
@@ -182,7 +182,7 @@ export function AttackRange() {
 
       <Panel
         title="Result"
-        caption="The verdict the engine actually returned, and the reasoning behind it."
+        caption="The verdict, the score, and every reason behind it."
       >
         {error ? (
           <EmptyState tone="error" title="That did not run" body={error} />

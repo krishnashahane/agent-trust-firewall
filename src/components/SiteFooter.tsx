@@ -44,10 +44,8 @@ export function SiteFooter() {
               <span className="text-[13px] font-semibold">Agent Trust Firewall</span>
             </div>
             <p className="mt-3 max-w-md text-[12.5px] leading-relaxed text-[var(--text-muted)]">
-              Every verdict on this site is produced by the live engine and every
-              external finding by a live third-party lookup. Nothing is pre-recorded —
-              and the source is public so you can confirm that rather than take it
-              on trust.
+              Every verdict here comes from the live engine, and every threat-intel
+              finding from a live third-party lookup. The source is public.
             </p>
           </div>
 
