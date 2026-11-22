@@ -128,8 +128,14 @@ const { sealed } = await post("/api/gateway/intercept", {
   envelope: sealCall(gatewayKey, call),
   replyTo: encryption.publicKey, // the verdict comes back sealed to you
 });
-const verdict = open(encryption.secretKey, sealed); // { verdict: "ALLOW", score, explanation, ... }
+const verdict = open(encryption.secretKey, sealed); // { verdict: "ALLOW", score, explanation, nextChallenge, ... }
 ```
+
+Once an agent has proved its identity, the verdict carries `nextChallenge`: a
+fresh single-use challenge for its next call. Use `verdict.nextChallenge.nonce`
+instead of calling `/api/agents/challenge` again, and a steady stream of calls
+costs one round trip each. A verdict that failed identity or replay checks
+carries `nextChallenge: null`.
 
 Capabilities are `namespace:action` and must match the tool exactly
 (`calendar:createEvent` authorises `calendar.createEvent`) or by wildcard
@@ -271,7 +277,8 @@ CSP can carry a per-request nonce.
 npm run lint
 npm run typecheck
 npm run test           # 172 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
-npm run verify         # 25 security invariants, printed one per line
+npm run verify         # security invariants, printed one per line
+npm run smoke          # end-to-end as a real agent against ATF_URL (default localhost:3000); needs ATF_ADMIN_TOKEN
 npm run build
 npm audit              # 0 vulnerabilities, including dev tooling
 ```

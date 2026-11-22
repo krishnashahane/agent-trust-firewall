@@ -11,6 +11,7 @@
 import { z } from "zod";
 import { getGateway } from "@/lib/atf/gateway";
 import { decide, type InterceptRequest } from "@/lib/atf/interceptor/decide";
+import { issueChallenge } from "@/lib/atf/identity/nonce";
 import { EnvelopeError, open, seal } from "@/lib/atf/crypto/e2ee";
 import { fail, HttpError, limit, ok, originGuard, readJson } from "@/lib/guard";
 
@@ -48,6 +49,14 @@ const envelopeSchema = z.object({
     issuedAt: z.number().int(),
   }),
 });
+
+/** Any of these means the caller did not prove it is the agent it named. */
+const IDENTITY_RULES = new Set([
+  "unknown-agent",
+  "revoked-key",
+  "identity-unproven",
+  "replayed-challenge",
+]);
 
 const bodySchema = z.union([
   z.object({ envelope: envelopeSchema, replyTo: hex(32).optional() }),
@@ -91,6 +100,13 @@ export async function POST(request: Request) {
     }
 
     const decision = await decide(gateway.store, call, { config: gateway.config });
+
+    // The next single-use challenge rides back with the verdict, so an agent
+    // in steady state makes one round trip per call instead of two. Only for a
+    // caller that just proved it holds the agent's key.
+    const nextChallenge = decision.violations.some((v) => IDENTITY_RULES.has(v.rule))
+      ? null
+      : await issueChallenge(gateway.store, call.agentId);
     const payload = {
       verdict: decision.verdict,
       score: decision.risk.score,
@@ -100,6 +116,7 @@ export async function POST(request: Request) {
       contributions: decision.risk.contributions,
       auditId: decision.auditId,
       transport: encrypted ? "sealed" : "plaintext",
+      nextChallenge,
     };
 
     // Seal the verdict back when the caller gave us somewhere to seal it to.

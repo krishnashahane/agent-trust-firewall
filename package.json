@@ -12,7 +12,8 @@
     "test": "vitest run",
     "verify": "node --experimental-strip-types scripts/verify.ts",
     "mcp": "node --experimental-strip-types src/lib/atf/mcp/server.ts",
-    "seed": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/seed.ts"
+    "seed": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/seed.ts",
+    "smoke": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/smoke.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.1",
