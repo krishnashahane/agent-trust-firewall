@@ -26,7 +26,7 @@ export default function ConsolePage() {
     <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6">
       <PageHeader
         title="Console"
-        lede="Everything the firewall has intercepted, as it happens. Each row is one agent call that was verified, scored and either allowed through or stopped. The agents are synthetic; every verdict, proof and audit hash is computed live."
+        lede="Every request an AI agent sent through the firewall, newest first: who asked, what for, and whether it was allowed, held for a person to review, or blocked — with the reason. The agents are demo agents; every verdict is computed live."
       />
       <TrafficConsole />
     </main>

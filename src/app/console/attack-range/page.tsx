@@ -29,7 +29,7 @@ export default function AttackRangePage() {
     <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6">
       <PageHeader
         title="Attack range"
-        lede="Pick an attack and send it through the live firewall. Each one builds a real forged key, replayed proof or escalated capability, so the verdict you see is computed, not recorded."
+        lede="Pick an attack and send it through the live firewall: an agent nobody approved, a stolen request sent again, an agent reaching beyond its permissions. Each is built for real, so the verdict you see is computed, not recorded."
       />
       <Suspense
         fallback={

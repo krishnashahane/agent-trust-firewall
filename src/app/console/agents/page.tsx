@@ -26,7 +26,7 @@ export default function AgentsPage() {
     <main className="mx-auto max-w-[900px] px-4 py-8 sm:px-6">
       <PageHeader
         title="Agents"
-        lede="The fleet the firewall knows about. Enrolment records a public key and a commitment to what each agent may do — never a secret, and never the capability list itself."
+        lede="The AI agents this firewall knows, and how far it currently trusts each one. For every agent it keeps only a public key and a fingerprint of what the agent may do — never a secret."
       />
       <AgentsView />
     </main>

@@ -12,10 +12,10 @@ interface Outcome {
 }
 
 const CHECKS = [
-  { label: "Envelope opened", detail: "decrypted inside the firewall" },
-  { label: "Identity proof checked", detail: "key proof, single-use" },
-  { label: "Capability checked", detail: "Merkle inclusion proof" },
-  { label: "Risk scored", detail: "seven signals, live intel" },
+  { label: "Message unsealed", detail: "only the firewall can read it" },
+  { label: "Identity checked", detail: "proved with its secret key" },
+  { label: "Permission checked", detail: "is it allowed to do this?" },
+  { label: "Risk scored", detail: "seven warning signs, live threat data" },
 ] as const;
 
 /**

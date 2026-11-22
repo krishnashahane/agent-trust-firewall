@@ -129,7 +129,7 @@ export function AuditView() {
     <div className="space-y-4">
       <Panel
         title="Chain integrity"
-        caption="Each record commits to the hash of the one before it. Altering or deleting any past entry breaks every hash after it."
+        caption="Each entry is sealed together with the one before it, like links in a chain. Change or delete any past entry and every link after it breaks."
         action={
           <Button
             variant="secondary"
@@ -246,7 +246,7 @@ export function AuditView() {
 
       <Panel
         title="Audit records"
-        caption={`Who called what, the verdict, and a digest of the request. Argument values are never stored here — an audit log that leaks what it audits is a liability.${
+        caption={`Who asked for what, and the verdict. Each request is kept as a fingerprint, never its contents, so the log cannot leak what it records.${
           durable === true
             ? " The chain is persisted, so it survives restarts and redeploys."
             : durable === false

@@ -17,9 +17,9 @@ import { useReducedMotion } from "@/components/motion";
  */
 
 const STAGES = [
-  { key: "identity", label: "Identity", sub: "key proof", x: 236 },
-  { key: "capability", label: "Capability", sub: "Merkle proof", x: 330 },
-  { key: "risk", label: "Risk", sub: "7 signals", x: 424 },
+  { key: "identity", label: "Identity", sub: "who is it?", x: 236 },
+  { key: "capability", label: "Permission", sub: "allowed to?", x: 330 },
+  { key: "risk", label: "Risk", sub: "how risky?", x: 424 },
   { key: "policy", label: "Policy", sub: "hard rules", x: 518 },
 ] as const;
 
@@ -289,22 +289,21 @@ export function FlowDiagram() {
       <figcaption className="mt-6 grid gap-3 text-[12.5px] leading-relaxed text-[var(--text-muted)] sm:grid-cols-2">
         <p>
           <b className="font-medium text-[var(--text)]">Encrypted.</b> The agent
-          seals the call with a one-time key, so nothing readable crosses the wire.
+          seals the request with a one-time key, so nobody in between can read it.
         </p>
         <p>
           <b className="font-medium text-[var(--text)]">Identity.</b> It proves it
-          holds its secret key without sending it, against a challenge good for
-          exactly one request.
+          holds its secret key without ever sending it, in a way that works for
+          this one request only.
         </p>
         <p>
-          <b className="font-medium text-[var(--text)]">Capability.</b> It proves
-          the one permission this call needs, revealing nothing about the rest of
-          its authority.
+          <b className="font-medium text-[var(--text)]">Permission.</b> It proves it
+          is allowed this one action, without revealing anything else it may do.
         </p>
         <p>
-          <b className="font-medium text-[var(--text)]">Risk and policy.</b> Seven
-          signals — including live external threat intelligence — produce an
-          explained score; hard rules block regardless of where it lands.
+          <b className="font-medium text-[var(--text)]">Risk and rules.</b> Seven
+          warning signs, including live threat data, add up to a score with every
+          point explained. Some rules block no matter what the score says.
         </p>
       </figcaption>
     </figure>

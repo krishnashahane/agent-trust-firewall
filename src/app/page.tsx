@@ -24,6 +24,25 @@ const PROBLEM = [
   },
 ] as const;
 
+const PLAIN = [
+  {
+    title: "Checks the ID",
+    body: "Every AI agent has a secret key. Before anything runs, it must prove it holds that key — a copied or stolen request will not pass.",
+  },
+  {
+    title: "Checks the ticket",
+    body: "Each agent is approved for specific jobs, like booking meetings. If a booking agent suddenly tries to make a payment, it is stopped.",
+  },
+  {
+    title: "Scans the bag",
+    body: "The request is scored for warning signs: odd behaviour, hidden instructions, leaked passwords, known bad addresses.",
+  },
+  {
+    title: "Keeps a sealed logbook",
+    body: "Every decision is written to a log that shows if anyone edits or deletes an entry later — even whoever runs the server.",
+  },
+] as const;
+
 const LIMITS = [
   "It protects calls that pass through it. An agent that bypasses the gateway is not covered.",
   "The demo agents are synthetic. Their keys, proofs, verdicts and the threat intel on their addresses are real and computed live.",
@@ -69,6 +88,31 @@ export default function OverviewPage() {
         </div>
 
         <LiveHeroDemo />
+      </section>
+
+      <section className="border-t border-[var(--border)] py-14 md:py-16">
+        <Reveal>
+          <h2 className={sectionTitle}>In plain terms</h2>
+          <p className={sectionLede}>
+            Think of it as airport security for AI agents. Every request an agent
+            makes is stopped at the gate and checked four ways before it is allowed
+            through. The result is one of three words:{" "}
+            <b className="font-medium text-[var(--allow)]">Allowed</b>,{" "}
+            <b className="font-medium text-[var(--flag)]">Flagged</b> (held for a person
+            to review) or <b className="font-medium text-[var(--block)]">Blocked</b>.
+          </p>
+        </Reveal>
+
+        <dl className="mt-6 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+          {PLAIN.map((item, index) => (
+            <Reveal key={item.title} delay={index * 60}>
+              <dt className="text-[14px] font-semibold leading-snug">{item.title}</dt>
+              <dd className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-muted)]">
+                {item.body}
+              </dd>
+            </Reveal>
+          ))}
+        </dl>
       </section>
 
       <section className="border-t border-[var(--border)] py-14 md:py-16">
