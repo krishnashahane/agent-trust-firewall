@@ -7,7 +7,7 @@ import { signCall } from "@/lib/atf/client";
 import { generateKeyPair } from "@/lib/atf/identity/schnorr";
 import { generateEncryptionKeyPair } from "@/lib/atf/crypto/e2ee";
 import { sealField } from "@/lib/atf/crypto/sealed";
-import { proveCapability } from "@/lib/atf/identity/merkle";
+import { capabilityRoot, proveCapability } from "@/lib/atf/identity/merkle";
 import { summarizeArguments } from "@/lib/atf/interceptor/arguments";
 import type { Store } from "@/lib/atf/store/port";
 
@@ -24,7 +24,7 @@ async function setup() {
       displayName: "Agent One",
       signingPublicKey: signing.publicKey,
       encryptionPublicKey: encryption.publicKey,
-      capabilities: CAPS,
+      capabilityRoot: capabilityRoot(CAPS),
     },
     Date.now() - 30 * 24 * 3_600_000,
   );
@@ -72,6 +72,24 @@ describe("registry", () => {
     expect(agent!.capabilityRoot).toMatch(/^[0-9a-f]{64}$/);
   });
 
+  it("never holds the capability list, only its root", async () => {
+    const { store } = await setup();
+    const stored = JSON.stringify(await store.getAgent("agent-1"));
+    for (const capability of CAPS) expect(stored).not.toContain(capability);
+  });
+
+  it("learns a capability only when a call proves it", async () => {
+    const { store, creds } = await setup();
+    await decide(store, await call(store, creds));
+    const [event] = await store.listEvents(1);
+    expect(event!.capability).toBe("search:query");
+
+    const escalated = await call(store, creds, { tool: "payments.charge", capability: "payments:charge" });
+    await decide(store, escalated);
+    const [blocked] = await store.listEvents(1);
+    expect(blocked!.capability).toBeUndefined();
+  });
+
   it("refuses to re-enrol over a live agent id", async () => {
     const { store } = await setup();
     const other = generateKeyPair();
@@ -81,7 +99,7 @@ describe("registry", () => {
         displayName: "Impostor",
         signingPublicKey: other.publicKey,
         encryptionPublicKey: other.publicKey,
-        capabilities: ["admin:root"],
+        capabilityRoot: capabilityRoot(["admin:root"]),
       }),
     ).rejects.toBeInstanceOf(DuplicateAgentError);
   });

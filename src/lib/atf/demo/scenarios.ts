@@ -326,7 +326,7 @@ export async function runScenario(
           encryptionPublicKey:
             gateway.identities.get("research-scout")?.encryptionPublicKey ??
             rogue.publicKey,
-          capabilities,
+          capabilityRoot: capabilityRoot(capabilities),
           originIp: UNKNOWN_ORIGIN,
         },
         now - 3 * 3_600_000,

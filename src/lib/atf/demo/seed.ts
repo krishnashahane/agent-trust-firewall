@@ -12,6 +12,7 @@
  * same shape on every boot. Cryptographic randomness is untouched.
  */
 import { registerAgent, rotateKey } from "../identity/registry.ts";
+import { capabilityRoot } from "../identity/merkle.ts";
 import { issueChallenge } from "../identity/nonce.ts";
 import { decide } from "../interceptor/decide.ts";
 import { signCall } from "../client.ts";
@@ -87,7 +88,7 @@ export async function registerFleet(gateway: Gateway): Promise<void> {
           displayName: identity.displayName,
           signingPublicKey: identity.signingPublicKey,
           encryptionPublicKey: identity.encryptionPublicKey,
-          capabilities: identity.capabilities,
+          capabilityRoot: capabilityRoot(identity.capabilities),
           originIp: identity.originIp,
         },
         registeredAt,

@@ -49,7 +49,11 @@ export async function GET(request: Request) {
               }
             : null,
           displayName: agent.displayName,
-          capabilities: agent.declaredCapabilities,
+          // The firewall holds only the capability root. What it can show is
+          // what this agent has proved, one capability per verified call.
+          provedCapabilities: [
+            ...new Set(history.flatMap((e) => (e.capability ? [e.capability] : []))),
+          ].sort(),
           capabilityRoot: agent.capabilityRoot,
           registeredAt: agent.registeredAt,
           keyRotatedAt: agent.keyRotatedAt,

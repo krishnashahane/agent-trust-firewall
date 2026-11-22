@@ -92,6 +92,11 @@ export async function ensureSchema(): Promise<void> {
   await db`CREATE INDEX IF NOT EXISTS atf_events_agent_ts ON atf_events (agent_id, timestamp DESC)`;
   await db`CREATE INDEX IF NOT EXISTS atf_events_ts ON atf_events (timestamp DESC)`;
   await db`CREATE INDEX IF NOT EXISTS atf_nonces_expiry ON atf_nonces (expires_at)`;
+  // Earlier releases stored each agent's full capability list. The firewall
+  // only needs the root, so any list left over from then is removed.
+  await db`
+    UPDATE atf_agents SET data = data - 'declaredCapabilities'
+    WHERE data ? 'declaredCapabilities'`;
 }
 
 export class PostgresStore implements Store {

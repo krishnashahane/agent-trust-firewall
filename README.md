@@ -79,6 +79,7 @@ over plain HTTP:
 import { generateKeyPair } from "./src/lib/atf/identity/schnorr.ts";
 import { generateEncryptionKeyPair, open } from "./src/lib/atf/crypto/e2ee.ts";
 import { signCall, sealCall } from "./src/lib/atf/client.ts";
+import { capabilityRoot } from "./src/lib/atf/identity/merkle.ts";
 
 const BASE = "http://localhost:3000";
 const post = (path: string, body: unknown) =>
@@ -88,7 +89,8 @@ const post = (path: string, body: unknown) =>
     body: JSON.stringify(body),
   }).then((r) => r.json());
 
-// 1. Enrol once. Only public keys are sent.
+// 1. Enrol once. Only public keys and a commitment to the grants are sent —
+//    the firewall never receives the capability list itself.
 const signing = generateKeyPair();
 const encryption = generateEncryptionKeyPair();
 const capabilities = ["calendar:createEvent", "search:query"];
@@ -97,7 +99,7 @@ await post("/api/agents/register", {
   displayName: "My agent",
   signingPublicKey: signing.publicKey,
   encryptionPublicKey: encryption.publicKey,
-  capabilities,
+  capabilityRoot: capabilityRoot(capabilities),
 });
 
 // 2. Per call: get a single-use challenge, prove, seal, submit.

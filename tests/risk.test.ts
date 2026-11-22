@@ -21,7 +21,6 @@ const agent: AgentRecord = {
   signingPublicKey: "a".repeat(64),
   encryptionPublicKey: "b".repeat(64),
   capabilityRoot: "c".repeat(64),
-  declaredCapabilities: ["search:query"],
   registeredAt: NOW - 30 * 24 * 3_600_000,
   keyRotatedAt: NOW - 10 * 24 * 3_600_000,
   revoked: false,

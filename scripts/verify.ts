@@ -21,7 +21,7 @@ import {
 } from "../src/lib/atf/crypto/e2ee.ts";
 import { sealField, openField } from "../src/lib/atf/crypto/sealed.ts";
 import { verifyChain, hashRecord } from "../src/lib/atf/audit/chain.ts";
-import { proveCapability } from "../src/lib/atf/identity/merkle.ts";
+import { capabilityRoot, proveCapability } from "../src/lib/atf/identity/merkle.ts";
 import { isPublicIpv4 } from "../src/lib/atf/osint/net.ts";
 import { intelSignal } from "../src/lib/atf/risk/signals/intel.ts";
 import type { Store } from "../src/lib/atf/store/port.ts";
@@ -54,7 +54,7 @@ async function makeWorld() {
       displayName: "Agent One",
       signingPublicKey: signing.publicKey,
       encryptionPublicKey: encryption.publicKey,
-      capabilities: CAPS,
+      capabilityRoot: capabilityRoot(CAPS),
     },
     Date.now() - 30 * 24 * 3_600_000,
   );

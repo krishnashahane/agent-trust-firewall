@@ -20,6 +20,7 @@ import {
 import { DEFAULT_RISK_CONFIG, type RiskConfig } from "@/lib/atf/risk/config";
 import { MemoryStore } from "@/lib/atf/store/memory";
 import { registerAgent, revokeAgent } from "@/lib/atf/identity/registry";
+import { capabilityRoot } from "@/lib/atf/identity/merkle";
 import { issueChallenge } from "@/lib/atf/identity/nonce";
 import { decide } from "@/lib/atf/interceptor/decide";
 import { signCall } from "@/lib/atf/client";
@@ -115,7 +116,7 @@ describe("a sandbox cannot disable a hard rule", () => {
       displayName: "Agent One",
       signingPublicKey: signing.publicKey,
       encryptionPublicKey: encryption.publicKey,
-      capabilities,
+      capabilityRoot: capabilityRoot(capabilities),
     });
     await revokeAgent(store, "agent-1", "key leaked");
 

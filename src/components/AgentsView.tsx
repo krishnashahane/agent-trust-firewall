@@ -30,7 +30,8 @@ interface AgentIntel {
 interface AgentRow {
   agentId: string;
   displayName: string;
-  capabilities: string[];
+  /** capabilities this agent has proved in recent calls; the firewall never holds the full list */
+  provedCapabilities: string[];
   capabilityRoot: string;
   registeredAt: number;
   keyRotatedAt: number;
@@ -185,7 +186,10 @@ export function AgentsView() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  {agent.capabilities.map((capability) => (
+                  {agent.provedCapabilities.length > 0 ? (
+                    <span className="text-[10.5px] text-[var(--text-faint)]">Proved in recent calls:</span>
+                  ) : null}
+                  {agent.provedCapabilities.map((capability) => (
                     <span
                       key={capability}
                       className="mono rounded-[var(--r-sm)] border border-[var(--border)] bg-[var(--bg-inset)] px-1.5 py-[2px] text-[10.5px] text-[var(--text-muted)]"

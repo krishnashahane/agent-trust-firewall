@@ -16,6 +16,7 @@
 import { createInterface } from "node:readline";
 import { MemoryStore } from "../store/memory.ts";
 import { registerAgent } from "../identity/registry.ts";
+import { capabilityRoot } from "../identity/merkle.ts";
 import { issueChallenge } from "../identity/nonce.ts";
 import { decide } from "../interceptor/decide.ts";
 import { DEFAULT_RISK_CONFIG } from "../risk/config.ts";
@@ -116,7 +117,7 @@ export async function createSession(
     displayName: "MCP Client",
     signingPublicKey: signing.publicKey,
     encryptionPublicKey: encryption.publicKey,
-    capabilities,
+    capabilityRoot: capabilityRoot(capabilities),
   });
 
   return { store, agentId, signingSecretKey: signing.secretKey, capabilities };

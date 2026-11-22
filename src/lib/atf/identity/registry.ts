@@ -2,11 +2,11 @@
  * Agent enrolment.
  *
  * Enrolment records public keys and a commitment to the agent's capability set.
- * No secret is ever submitted: an agent proves possession of its signing key
- * with a zero-knowledge proof, and the firewall only ever holds the public half.
+ * No secret is ever submitted, and neither is the capability list: the issuer
+ * computes the Merkle root with `capabilityRoot()` and enrols only that. The
+ * firewall later learns one capability per call, from the call's own proof.
  */
 import { z } from "zod";
-import { capabilityRoot, normalizeCapabilities } from "./merkle.ts";
 import type { Store } from "../store/port.ts";
 import type { AgentRecord } from "../types.ts";
 
@@ -25,7 +25,8 @@ export const registrationSchema = z.object({
   displayName: z.string().min(1).max(80),
   signingPublicKey: hex(32),
   encryptionPublicKey: hex(32),
-  capabilities: z.array(z.string().min(1).max(64)).min(1).max(64),
+  /** Merkle root over the granted capabilities, from `capabilityRoot()` */
+  capabilityRoot: hex(32),
   /** optional public IPv4 the agent calls from, for external enrichment */
   originIp: z
     .string()
@@ -47,14 +48,12 @@ export async function registerAgent(
     // Re-enrolling over a live id would let anyone displace an agent's key.
     throw new DuplicateAgentError("agent id already enrolled");
   }
-  const capabilities = normalizeCapabilities(input.capabilities);
   const agent: AgentRecord = {
     agentId: input.agentId,
     displayName: input.displayName,
     signingPublicKey: input.signingPublicKey.toLowerCase(),
     encryptionPublicKey: input.encryptionPublicKey.toLowerCase(),
-    capabilityRoot: capabilityRoot(capabilities),
-    declaredCapabilities: capabilities,
+    capabilityRoot: input.capabilityRoot.toLowerCase(),
     registeredAt: now,
     keyRotatedAt: now,
     ...(input.originIp ? { originIp: input.originIp } : {}),

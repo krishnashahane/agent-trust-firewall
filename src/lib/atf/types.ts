@@ -16,8 +16,6 @@ export interface AgentRecord {
   encryptionPublicKey: string;
   /** Merkle root over the granted capability set */
   capabilityRoot: string;
-  /** kept only so the dashboard can show what was granted; proofs never rely on it */
-  declaredCapabilities: string[];
   registeredAt: number;
   keyRotatedAt: number;
   /** public IPv4 this agent calls from, used for external enrichment */
@@ -118,6 +116,8 @@ export interface TrafficEvent {
   violations: PolicyViolation[];
   explanation: string;
   sealedFieldCount: number;
+  /** the capability this call proved, when its Merkle proof verified */
+  capability?: string;
   /** threat labels from live external intel, empty when none applied */
   intelLabels: string[];
   /** true when this verdict was informed by a live third-party lookup */
