@@ -115,12 +115,23 @@ describe("hostile scenarios are actually stopped", () => {
     expect(precedingCalls).toBeGreaterThan(20);
     const rate = decision.risk.contributions.find((c) => c.id === "rate");
     expect(rate!.score).toBeGreaterThan(0.5);
+    // Noticing is not enough: a flood that is merely scored is still allowed.
+    expect(decision.verdict).not.toBe("ALLOW");
   });
 
   it("notices behaviour that does not fit the agent's baseline", async () => {
     const { decision } = await runScenario(world, "off-baseline");
     const behavior = decision.risk.contributions.find((c) => c.id === "behavior");
     expect(behavior!.score).toBeGreaterThan(0.3);
+    expect(decision.verdict).not.toBe("ALLOW");
+  });
+
+  it("stops every hostile scenario and allows the legitimate one", async () => {
+    for (const scenario of SCENARIOS) {
+      const { decision } = await runScenario(await freshGateway(), scenario.id);
+      if (scenario.id === "healthy") expect(decision.verdict).toBe("ALLOW");
+      else expect(decision.verdict, scenario.id).not.toBe("ALLOW");
+    }
   });
 
   it("does not allow a prompt-injection payload through", async () => {

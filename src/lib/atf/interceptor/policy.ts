@@ -70,18 +70,26 @@ export function hardRuleViolations(ctx: RequestContext): PolicyViolation[] {
  * A confident payload detection — text engineered to hijack a downstream model,
  * or a credential riding out in an argument — must never be silently allowed
  * just because it came from a well-behaved agent with a light payload weight.
+ * The same holds for a burst of calls (an agent draining an API) and for a
+ * sensitive action to a destination the agent has never used: each is weighted
+ * lightly in the total, and each used to be averaged into an ALLOW.
+ *
  * These escalate rather than block outright, because they are heuristics and
  * heuristics produce false positives; a human should see them, not lose them.
  */
-const ESCALATION_FLOOR = 0.75;
-const ESCALATING_SIGNALS = new Set(["payload"]);
+const ESCALATION_FLOORS: Readonly<Record<string, number>> = {
+  payload: 0.75,
+  rate: 0.75,
+  behavior: 0.6,
+};
 
 export function escalations(
   contributions: readonly SignalContribution[],
 ): SignalContribution[] {
-  return contributions.filter(
-    (c) => ESCALATING_SIGNALS.has(c.id) && c.score >= ESCALATION_FLOOR,
-  );
+  return contributions.filter((c) => {
+    const floor = ESCALATION_FLOORS[c.id];
+    return floor !== undefined && c.score >= floor;
+  });
 }
 
 /** Fail-closed: anything not positively allowed is at least flagged. */

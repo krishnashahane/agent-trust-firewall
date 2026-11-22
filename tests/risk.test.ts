@@ -377,3 +377,49 @@ describe("payload inspection sees through disguises", () => {
     expect(performance.now() - started).toBeLessThan(500);
   });
 });
+
+describe("rate and behaviour are judged against the agent's own past", () => {
+  const at = (msAgo: number, over: Partial<TrafficEvent> = {}) =>
+    event({ timestamp: NOW - msAgo, ...over });
+
+  const ctxWith = (history: TrafficEvent[], over: Partial<RequestContext> = {}) =>
+    ({
+      agentId: "agent-1",
+      agent,
+      tool: "search.query",
+      destination: "api.search.internal",
+      claimedCapability: "search:query",
+      capabilityProven: true,
+      identityProven: true,
+      nonceFresh: true,
+      requestDigest: "d".repeat(64),
+      argumentSummary: { fieldCount: 1, totalBytes: 10, sealedFieldCount: 0, maxEntropy: 3, descriptorMismatch: false },
+      inspectableText: "",
+      timestamp: NOW,
+      history,
+      ...over,
+    }) as RequestContext;
+
+  it("treats a sudden burst from a slow agent as a burst", () => {
+    const usual = Array.from({ length: 20 }, (_, i) => at(120_000 + i * 60_000));
+    const flood = Array.from({ length: 40 }, (_, i) => at(i * 200));
+    expect(rateSignal(ctxWith([...flood, ...usual])).score).toBeGreaterThanOrEqual(0.75);
+  });
+
+  it("does not treat an agent's steady high volume as a burst", () => {
+    const steady = Array.from({ length: 150 }, (_, i) => at(i * 1_000));
+    expect(rateSignal(ctxWith(steady)).score).toBeLessThan(0.75);
+  });
+
+  it("learns habits only from calls it allowed", () => {
+    const allowed = Array.from({ length: 10 }, (_, i) => at(60_000 * (i + 1)));
+    const refused = Array.from({ length: 10 }, (_, i) =>
+      at(30_000 * (i + 1), { tool: "storage.write", destination: "exfil.example", verdict: "BLOCK" }),
+    );
+    const signal = behaviorSignal(
+      ctxWith([...refused, ...allowed], { tool: "storage.write", destination: "exfil.example" }),
+    );
+    expect(signal.evidence).toContain("never contacted exfil.example");
+    expect(signal.score).toBeGreaterThanOrEqual(0.6);
+  });
+});
