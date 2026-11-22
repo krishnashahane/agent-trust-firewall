@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     originGuard(request);
-    limit(request, "config-preview", 120);
+    await limit(request, "config-preview", 120);
     const config = await readJson(request, riskConfigSchema);
     const gateway = await getSeededGateway();
     const events = await gateway.store.listEvents(200);

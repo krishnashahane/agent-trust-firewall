@@ -324,7 +324,7 @@ rather than zkSNARKs, and why hard rules sit outside the score.
 | `503 Enrolment is disabled` / `401` on register | Set `ATF_ADMIN_TOKEN` (32+ chars) and send it as `Authorization: Bearer …` |
 | `replayed-challenge` | Each challenge is single-use and expires. Request a fresh one per call |
 | `403 Cross-site requests are not accepted here.` | A browser on another origin called a state-changing route. Call from the same origin or from a server (no `Origin` header) |
-| `429 Too many requests` | Per-client, per-route rate limit. Wait a minute |
+| `429 Too many requests` | Per-client, per-route rate limit, shared across instances when a database is configured. Wait a minute |
 | Intel rows say *synthetic only* | Providers were unreachable or timed out (4s). That is reported, never shown as a clean result |
 | `npm run verify` / `mcp` fails with an unknown flag | Node is older than 22.6. Upgrade Node |
 
@@ -332,7 +332,8 @@ rather than zkSNARKs, and why hard rules sit outside the score.
 
 The demo fleet is synthetic, but its keys, proofs, verdicts and origin
 addresses are real — the addresses are live cloud hosts and the intelligence
-shown about them is fetched at request time. Rate limiting is per instance.
+shown about them is fetched at request time. Rate limits are shared across
+instances only when `DATABASE_URL` is set; otherwise each instance counts alone.
 Payload inspection is heuristic, which is why it escalates to FLAG rather than
 blocking. And a firewall must read a request to score it, so ATF is a trusted
 endpoint for the outer envelope; only destination-sealed fields are opaque to

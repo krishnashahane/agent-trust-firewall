@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     originGuard(request);
-    limit(request, "register", 10);
+    await limit(request, "register", 10);
     // Before the body is read: an unauthenticated caller costs nothing more.
     requireAdmin(request);
     const input = await readJson(request, registrationSchema);

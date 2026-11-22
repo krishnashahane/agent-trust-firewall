@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /** The hash-chained log. Digests and metadata only — never argument values. */
 export async function GET(request: Request) {
   try {
-    limit(request, "audit", 120);
+    await limit(request, "audit", 120);
     const gateway = await getSeededGateway();
     const records = await gateway.store.listAudit(200);
     return ok({

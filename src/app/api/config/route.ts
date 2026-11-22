@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   try {
-    limit(request, "config-get", 120);
+    await limit(request, "config-get", 120);
     const jar = await cookies();
     const sessionId = jar.get(SESSION_COOKIE)?.value;
 
@@ -47,7 +47,7 @@ export async function PUT(request: Request) {
   try {
     originGuard(request);
     // Tighter than the read path: this is the only write a visitor can make.
-    limit(request, "config-put", 20);
+    await limit(request, "config-put", 20);
     const config = await readJson(request, riskConfigSchema);
 
     // Touch the gateway so a cold instance is initialised, but never write to it.
@@ -78,7 +78,7 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     originGuard(request);
-    limit(request, "config-delete", 20);
+    await limit(request, "config-delete", 20);
     const jar = await cookies();
     const sessionId = jar.get(SESSION_COOKIE)?.value;
     if (isValidSessionId(sessionId)) clearSessionConfig(sessionId);

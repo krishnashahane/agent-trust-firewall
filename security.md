@@ -79,8 +79,10 @@ Stated here and on the landing page rather than glossed over.
 1. **Storage is durable when configured.** With `DATABASE_URL` set the audit log
    and traffic history live in Postgres and survive restarts; without it the same
    code uses an in-process store that does not. `/api/health` reports which.
-2. **Rate limiting is per instance.** It bounds one process honestly rather than
-   pretending to be a distributed limit.
+2. **Rate limits are shared only with a database.** With `DATABASE_URL` set, every
+   instance counts against one Postgres-backed window per client and route.
+   Without it, or if the database is unreachable, each instance enforces the
+   limit on its own.
 3. **ATF reads the outer envelope.** A firewall that scores a request must be
    able to read it, so ATF is by design a trusted endpoint for that layer. Only
    fields an agent seals to the destination stay opaque to it.

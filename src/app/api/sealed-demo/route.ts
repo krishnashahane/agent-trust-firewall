@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     originGuard(request);
-    limit(request, "sealed-demo", 20);
+    await limit(request, "sealed-demo", 20);
     const gateway = await getGateway();
     return ok(await runSealedFieldDemo(gateway));
   } catch (error) {

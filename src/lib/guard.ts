@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { bytesToHex, random } from "./atf/crypto/primitives.ts";
 import { adminConfigured, checkAdmin } from "./atf/admin.ts";
+import { countRateHit, isPostgresConfigured } from "./atf/store/postgres.ts";
 
 export const JSON_LIMIT_BYTES = 512 * 1024;
 
@@ -107,34 +108,52 @@ const buckets = (globalThis.__atfBuckets ??= new Map<string, Bucket>());
 const MAX_BUCKETS = 20_000;
 
 /**
- * Fixed-window limiter, per client per route. In-process, matching the rest of
- * ATF's zero-dependency posture: it bounds one instance, and is honest about
- * being per-instance rather than pretending to be a distributed limit.
+ * Fixed-window limiter, per client per route.
+ *
+ * With a database configured the count is shared by every instance, so a
+ * client cannot multiply its budget by landing on different serverless
+ * instances. Without one, or if the database is unreachable, each instance
+ * enforces the limit on its own — degraded, but never unlimited.
  */
-export function limit(
+export async function limit(
   request: Request,
   route: string,
   max: number,
   windowMs = 60_000,
-): void {
+): Promise<void> {
+  const key = `${route}:${clientKey(request)}`;
+  const count = isPostgresConfigured()
+    ? await sharedCount(key, windowMs)
+    : localCount(key, windowMs);
+  if (count > max) {
+    throw new HttpError(429, "Too many requests. Slow down and try again shortly.");
+  }
+}
+
+async function sharedCount(key: string, windowMs: number): Promise<number> {
+  const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
+  try {
+    return await countRateHit(key, windowStart, windowStart + windowMs);
+  } catch (error) {
+    console.error("[atf] shared rate limit unavailable; using this instance's count", error);
+    return localCount(key, windowMs);
+  }
+}
+
+function localCount(key: string, windowMs: number): number {
   const now = Date.now();
   if (buckets.size > MAX_BUCKETS) {
-    for (const [key, bucket] of buckets) {
-      if (bucket.resetAt < now) buckets.delete(key);
+    for (const [k, bucket] of buckets) {
+      if (bucket.resetAt < now) buckets.delete(k);
     }
     if (buckets.size > MAX_BUCKETS) buckets.clear();
   }
-
-  const key = `${route}:${clientKey(request)}`;
   const bucket = buckets.get(key);
   if (!bucket || bucket.resetAt < now) {
     buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return;
+    return 1;
   }
-  bucket.count++;
-  if (bucket.count > max) {
-    throw new HttpError(429, "Too many requests. Slow down and try again shortly.");
-  }
+  return ++bucket.count;
 }
 
 /** Vercel sets x-forwarded-for; the left-most entry is the client. */

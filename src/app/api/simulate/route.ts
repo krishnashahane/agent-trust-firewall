@@ -14,7 +14,7 @@ const schema = z.object({ scenario: z.enum(ids) });
 /** The catalogue, so the UI never hardcodes what the engine supports. */
 export async function GET(request: Request) {
   try {
-    limit(request, "simulate-list", 120);
+    await limit(request, "simulate-list", 120);
     return ok({ scenarios: SCENARIOS });
   } catch (error) {
     return fail(error);
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     originGuard(request);
-    limit(request, "simulate", 20);
+    await limit(request, "simulate", 20);
     const { scenario } = await readJson(request, schema);
     const gateway = await getGateway();
     // Score against this visitor's sandbox, falling back to the shared

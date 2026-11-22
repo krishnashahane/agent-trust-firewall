@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   try {
     originGuard(request);
     // Tighter than the read endpoints: each miss costs an outbound call.
-    limit(request, "osint", 30);
+    await limit(request, "osint", 30);
     const { ip } = await readJson(request, schema);
 
     // lookupIp validates the address itself and returns an "unavailable"

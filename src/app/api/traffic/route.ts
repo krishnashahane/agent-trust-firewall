@@ -9,7 +9,7 @@ const MAX = 250;
 /** Recent intercepted calls, newest first. */
 export async function GET(request: Request) {
   try {
-    limit(request, "traffic", 240);
+    await limit(request, "traffic", 240);
     const url = new URL(request.url);
     const requested = Number(url.searchParams.get("limit") ?? 100);
     const count = Number.isFinite(requested)

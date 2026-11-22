@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   try {
-    limit(request, "audit-verify", 60);
+    await limit(request, "audit-verify", 60);
     const gateway = await getGateway();
     const url = new URL(request.url);
 

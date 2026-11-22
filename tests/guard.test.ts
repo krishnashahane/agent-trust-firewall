@@ -53,43 +53,41 @@ describe("origin guard", () => {
 });
 
 describe("rate limiting", () => {
-  it("allows up to the limit then rejects with 429", () => {
+  const status = async (promise: Promise<void>) => {
+    try {
+      await promise;
+      return 200;
+    } catch (error) {
+      return (error as HttpError).status;
+    }
+  };
+
+  it("allows up to the limit then rejects with 429", async () => {
     const ip = `10.0.0.${Math.floor(Math.random() * 250)}`;
     const request = req({ ip, host: "h" });
     for (let i = 0; i < 5; i++) {
-      expect(() => limit(request, `test-${ip}`, 5)).not.toThrow();
+      expect(await status(limit(request, `test-${ip}`, 5))).toBe(200);
     }
-    try {
-      limit(request, `test-${ip}`, 5);
-      throw new Error("should have thrown");
-    } catch (error) {
-      expect(error).toBeInstanceOf(HttpError);
-      expect((error as HttpError).status).toBe(429);
-    }
+    expect(await status(limit(request, `test-${ip}`, 5))).toBe(429);
   });
 
-  it("keeps separate budgets per route", () => {
-    const ip = "10.9.9.9";
-    const request = req({ ip, host: "h" });
-    for (let i = 0; i < 3; i++) limit(request, "route-a", 3);
-    expect(() => limit(request, "route-b", 3)).not.toThrow();
+  it("keeps separate budgets per route", async () => {
+    const request = req({ ip: "10.9.9.9", host: "h" });
+    for (let i = 0; i < 3; i++) await limit(request, "route-a", 3);
+    expect(await status(limit(request, "route-b", 3))).toBe(200);
   });
 
-  it("keeps separate budgets per client", () => {
-    for (let i = 0; i < 3; i++) limit(req({ ip: "1.1.1.1", host: "h" }), "shared", 3);
-    expect(() => limit(req({ ip: "2.2.2.2", host: "h" }), "shared", 3)).not.toThrow();
+  it("keeps separate budgets per client", async () => {
+    for (let i = 0; i < 3; i++) await limit(req({ ip: "1.1.1.1", host: "h" }), "shared", 3);
+    expect(await status(limit(req({ ip: "2.2.2.2", host: "h" }), "shared", 3))).toBe(200);
   });
 
-  it("resets after the window", () => {
+  it("resets after the window", async () => {
     const request = req({ ip: "3.3.3.3", host: "h" });
-    limit(request, "windowed", 1, 1);
-    // A window of 1ms has certainly elapsed by the next event-loop turn.
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        expect(() => limit(request, "windowed", 1, 1)).not.toThrow();
-        resolve();
-      }, 5);
-    });
+    await limit(request, "windowed", 1, 1);
+    // A window of 1ms has certainly elapsed after a 5ms pause.
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    expect(await status(limit(request, "windowed", 1, 1))).toBe(200);
   });
 });
 

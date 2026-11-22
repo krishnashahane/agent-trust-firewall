@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   try {
-    limit(request, "audit-checkpoint", 30);
+    await limit(request, "audit-checkpoint", 30);
     const gateway = await getSeededGateway();
     const head = await gateway.store.auditHead();
     if (!head) throw new HttpError(404, "The log has no records yet.");

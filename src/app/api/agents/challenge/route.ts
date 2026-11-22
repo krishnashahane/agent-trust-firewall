@@ -18,7 +18,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   try {
     originGuard(request);
-    limit(request, "challenge", 120);
+    await limit(request, "challenge", 120);
     const { agentId } = await readJson(request, schema);
     const gateway = await getGateway();
     const challenge = await issueChallenge(gateway.store, agentId);

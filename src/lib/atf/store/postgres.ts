@@ -99,6 +99,51 @@ export async function ensureSchema(): Promise<void> {
     WHERE data ? 'declaredCapabilities'`;
 }
 
+let rateTable: Promise<void> | null = null;
+
+/**
+ * Count one request against a fixed window shared by every instance.
+ *
+ * One upsert per request: the row for (key, window) is created or incremented
+ * atomically, so concurrent instances cannot both read a stale count. Expired
+ * windows are cleaned up opportunistically.
+ */
+export async function countRateHit(
+  key: string,
+  windowStart: number,
+  expiresAt: number,
+): Promise<number> {
+  rateTable ??= (async () => {
+    await sql()`
+      CREATE TABLE IF NOT EXISTS atf_rate (
+        key TEXT NOT NULL,
+        window_start BIGINT NOT NULL,
+        count INT NOT NULL,
+        expires_at BIGINT NOT NULL,
+        PRIMARY KEY (key, window_start)
+      )`;
+    await sql()`CREATE INDEX IF NOT EXISTS atf_rate_expiry ON atf_rate (expires_at)`;
+  })().catch((error: unknown) => {
+    rateTable = null;
+    throw error;
+  });
+  await rateTable;
+
+  const rows = (await sql()`
+    INSERT INTO atf_rate (key, window_start, count, expires_at)
+    VALUES (${key}, ${asEpoch(windowStart)}, 1, ${asEpoch(expiresAt)})
+    ON CONFLICT (key, window_start) DO UPDATE SET count = atf_rate.count + 1
+    RETURNING count
+  `) as { count: number }[];
+
+  if (Math.random() < 0.01) {
+    void (sql()`DELETE FROM atf_rate WHERE expires_at < ${asEpoch(Date.now())}` as Promise<unknown>).catch(
+      () => undefined,
+    );
+  }
+  return Number(rows[0]?.count ?? 1);
+}
+
 export class PostgresStore implements Store {
   /* --------------------------------------------------------------- agents */
 

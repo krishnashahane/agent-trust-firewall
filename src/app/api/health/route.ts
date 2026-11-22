@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 /** Reports posture, never secrets. */
 export async function GET(request: Request) {
   try {
-    limit(request, "health", 60);
+    await limit(request, "health", 60);
     const gateway = await getGateway();
     const audit = await gateway.store.listAudit(2000);
     const auditLength = await gateway.store.auditLength();

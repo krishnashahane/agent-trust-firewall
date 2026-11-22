@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 /** The enrolled fleet, with the trust picture the dashboard renders. */
 export async function GET(request: Request) {
   try {
-    limit(request, "agents", 120);
+    await limit(request, "agents", 120);
     const gateway = await getSeededGateway();
     const agents = await gateway.store.listAgents();
     const now = Date.now();

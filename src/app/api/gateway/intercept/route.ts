@@ -66,7 +66,7 @@ const bodySchema = z.union([
 export async function POST(request: Request) {
   try {
     originGuard(request);
-    limit(request, "intercept", 120);
+    await limit(request, "intercept", 120);
     const body = await readJson(request, bodySchema);
     const gateway = await getGateway();
 
