@@ -70,42 +70,103 @@ export function linkRecord(
 export interface ChainVerification {
   valid: boolean;
   length: number;
+  /** seq of the first record checked; 0 means the whole chain from genesis */
+  fromSeq: number;
   /** seq of the first record that failed, if any */
   brokenAt: number | null;
   reason: string | null;
 }
 
-/** Records must be supplied in ascending seq order. */
-export function verifyChain(records: readonly AuditRecord[]): ChainVerification {
+/**
+ * Verify records supplied in ascending seq order.
+ *
+ * By default the records must be the whole chain, starting at genesis. Pass
+ * `{ window: true }` when they are only the most recent part of a longer log:
+ * the window is then verified from its first record's own link onwards, and
+ * `fromSeq` says so — links before it are not covered. Covering them is what
+ * checkpoints are for; see `checkConsistency`.
+ */
+export function verifyChain(
+  records: readonly AuditRecord[],
+  opts: { window?: boolean } = {},
+): ChainVerification {
+  const fromSeq = opts.window ? (records[0]?.seq ?? 0) : 0;
   let previous: AuditRecord | null = null;
+  const fail = (record: AuditRecord, reason: string): ChainVerification => ({
+    valid: false,
+    length: records.length,
+    fromSeq,
+    brokenAt: record.seq,
+    reason,
+  });
+
   for (const record of records) {
-    const expectedSeq = previous ? previous.seq + 1 : 0;
+    const expectedSeq = previous ? previous.seq + 1 : fromSeq;
     if (record.seq !== expectedSeq) {
-      return {
-        valid: false,
-        length: records.length,
-        brokenAt: record.seq,
-        reason: `sequence gap: expected ${expectedSeq}, found ${record.seq}`,
-      };
+      return fail(record, `sequence gap: expected ${expectedSeq}, found ${record.seq}`);
     }
-    const expectedPrev = previous ? previous.hash : GENESIS_HASH;
-    if (record.previousHash !== expectedPrev) {
-      return {
-        valid: false,
-        length: records.length,
-        brokenAt: record.seq,
-        reason: "record does not link to its predecessor",
-      };
+    if (!previous && record.seq === 0 && record.previousHash !== GENESIS_HASH) {
+      return fail(record, "the first record does not start from genesis");
+    }
+    if (previous && record.previousHash !== previous.hash) {
+      return fail(record, "record does not link to its predecessor");
     }
     if (hashRecord(record) !== record.hash) {
-      return {
-        valid: false,
-        length: records.length,
-        brokenAt: record.seq,
-        reason: "record contents do not match its hash — it was altered",
-      };
+      return fail(record, "record contents do not match its hash — it was altered");
     }
     previous = record;
   }
-  return { valid: true, length: records.length, brokenAt: null, reason: null };
+  return { valid: true, length: records.length, fromSeq, brokenAt: null, reason: null };
+}
+
+export type Consistency =
+  /** the checkpointed record is unchanged and every later link verifies */
+  | { status: "consistent"; checkedThrough: number }
+  /** the record at the checkpoint's position no longer has that hash */
+  | { status: "rewritten"; seq: number; reason: string }
+  /** the checkpointed record is intact but a later link is broken */
+  | { status: "broken"; seq: number; reason: string }
+  /** this server no longer holds that record, so the claim cannot be checked */
+  | { status: "unavailable"; reason: string };
+
+/**
+ * Is a previously saved checkpoint still part of this log?
+ *
+ * A hash chain alone cannot stop whoever controls the database: they can
+ * rewrite every record and recompute every hash. What they cannot do is make
+ * the rewritten chain agree with a checkpoint someone else saved before the
+ * rewrite. `records` must start at the checkpoint's seq, ascending.
+ */
+export function checkConsistency(
+  records: readonly AuditRecord[],
+  checkpoint: { seq: number; hash: string },
+  /** seq of the log's current head, or null when the log is empty */
+  headSeq: number | null = records.at(-1)?.seq ?? null,
+): Consistency {
+  if (headSeq === null || headSeq < checkpoint.seq) {
+    return {
+      status: "rewritten",
+      seq: checkpoint.seq,
+      reason: "The log is now shorter than when this fingerprint was saved: records were removed or the log was reset.",
+    };
+  }
+  const first = records[0];
+  if (!first || first.seq !== checkpoint.seq) {
+    return {
+      status: "unavailable",
+      reason: "This server no longer holds that record, so the checkpoint cannot be checked here.",
+    };
+  }
+  if (first.hash !== checkpoint.hash) {
+    return {
+      status: "rewritten",
+      seq: first.seq,
+      reason: "The record at this position has a different hash than when the checkpoint was saved.",
+    };
+  }
+  const chain = verifyChain(records, { window: true });
+  if (!chain.valid) {
+    return { status: "broken", seq: chain.brokenAt ?? first.seq, reason: chain.reason ?? "" };
+  }
+  return { status: "consistent", checkedThrough: (records[records.length - 1] as AuditRecord).seq };
 }

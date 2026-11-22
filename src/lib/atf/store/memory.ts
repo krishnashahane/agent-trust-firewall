@@ -103,6 +103,13 @@ export class MemoryStore implements Store {
     return this.audit.slice(-Math.max(0, limit));
   }
 
+  async auditFrom(fromSeq: number, limit: number): Promise<AuditRecord[]> {
+    const first = this.audit[0];
+    if (!first) return [];
+    const start = Math.max(0, fromSeq - first.seq);
+    return this.audit.slice(start, start + Math.max(0, limit));
+  }
+
   async auditHead(): Promise<AuditRecord | null> {
     return this.audit[this.audit.length - 1] ?? null;
   }

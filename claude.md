@@ -37,7 +37,8 @@ nothing in `src/lib/atf/` imports Next.js.
 | `src/lib/atf/osint/*.ts` | Live third-party threat intelligence. `providers.ts` holds one function per source (GreyNoise + Shodan keyless; AbuseIPDB + OTX key-gated), `index.ts` fans out, merges worst-case, and caches hard. `net.ts` restricts lookups to public IPv4 — the SSRF control. |
 | `src/lib/atf/risk/engine.ts` | Pure weighted composition → `{score 0-100, band, contributions[]}`. Deterministic, and every point is attributable. |
 | `src/lib/atf/interceptor/policy.ts` | Hard rules (unconditional BLOCK) and escalations (unconditional minimum FLAG). |
-| `src/lib/atf/audit/chain.ts` | SHA-256 hash-chained log. `verifyChain()` names the exact record that broke. |
+| `src/lib/atf/audit/chain.ts` | SHA-256 hash-chained log. `verifyChain()` names the exact record that broke; `{ window: true }` verifies only the recent part of a longer log and says so. `checkConsistency()` checks a saved checkpoint against the current log. |
+| `src/lib/atf/audit/checkpoint.ts` | Ed25519-signed checkpoints of the chain head. A hash chain cannot stop whoever controls the database from rewriting everything and re-hashing; a checkpoint someone else saved before the rewrite can. |
 | `src/lib/atf/session.ts` | Per-visitor config sandboxes. Bounded, TTL'd, cookie-keyed; keeps one visitor's tuning off another's screen. |
 | `src/lib/atf/store/postgres.ts` | Durable store (Neon). Nonce consumption is one conditional DELETE…RETURNING so a replay cannot win a race; `seq` is the audit primary key so a concurrent append fails rather than forking the chain. |
 | `src/lib/atf/store/port.ts` | The storage interface. `memory.ts` (in-process) and `postgres.ts` (durable) both implement it; `gateway.ts` picks one from `DATABASE_URL` without the engine knowing which. |

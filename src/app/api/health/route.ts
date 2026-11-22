@@ -11,7 +11,8 @@ export async function GET(request: Request) {
     limit(request, "health", 60);
     const gateway = await getGateway();
     const audit = await gateway.store.listAudit(2000);
-    const chain = verifyChain(audit);
+    const auditLength = await gateway.store.auditLength();
+    const chain = verifyChain(audit, { window: auditLength > audit.length });
     const agents = await gateway.store.listAgents();
 
     return ok({
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
       bootedAt: gateway.bootedAt,
       uptimeMs: Date.now() - gateway.bootedAt,
       agentsEnrolled: agents.length,
-      auditLength: await gateway.store.auditLength(),
+      auditLength,
       auditChainValid: chain.valid,
       storage:
         gateway.storage === "postgres"

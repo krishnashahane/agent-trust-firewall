@@ -1,6 +1,15 @@
 import { getGateway } from "@/lib/atf/gateway";
-import { hashRecord, verifyChain, type AuditRecord } from "@/lib/atf/audit/chain";
-import { fail, limit, ok } from "@/lib/guard";
+import { z } from "zod";
+import { checkConsistency, hashRecord, verifyChain, type AuditRecord } from "@/lib/atf/audit/chain";
+import { fail, HttpError, limit, ok } from "@/lib/guard";
+
+const checkpointQuery = z.object({
+  seq: z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+  hash: z.string().regex(/^[0-9a-f]{64}$/),
+});
+
+/** How far past a checkpoint one request will walk the chain. */
+const CONSISTENCY_LIMIT = 5000;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,10 +23,24 @@ export async function GET(request: Request) {
   try {
     limit(request, "audit-verify", 60);
     const gateway = await getGateway();
-    const records = await gateway.store.listAudit(2000);
-    const live = verifyChain(records);
-
     const url = new URL(request.url);
+
+    if (url.searchParams.has("seq") || url.searchParams.has("hash")) {
+      const parsed = checkpointQuery.safeParse({
+        seq: url.searchParams.get("seq"),
+        hash: url.searchParams.get("hash")?.toLowerCase(),
+      });
+      if (!parsed.success) throw new HttpError(400, "Invalid request: seq, hash");
+      const from = await gateway.store.auditFrom(parsed.data.seq, CONSISTENCY_LIMIT);
+      const head = await gateway.store.auditHead();
+      return ok({ checkpoint: checkConsistency(from, parsed.data, head?.seq ?? null) });
+    }
+
+    const records = await gateway.store.listAudit(2000);
+    const live = verifyChain(records, {
+      window: (await gateway.store.auditLength()) > records.length,
+    });
+
     if (url.searchParams.get("demo") !== "tamper") {
       return ok({ live, tampered: null });
     }
@@ -46,7 +69,7 @@ export async function GET(request: Request) {
     return ok({
       live,
       tampered: {
-        result: verifyChain(copy),
+        result: verifyChain(copy, { window: records[0]!.seq > 0 }),
         alteredSeq: original.seq,
         changed: original.verdict === "BLOCK" ? "verdict" : "score",
         was: { verdict: original.verdict, score: original.score },

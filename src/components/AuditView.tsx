@@ -11,6 +11,7 @@ import {
 } from "@/components/ui";
 import { Counter, useReducedMotion } from "@/components/motion";
 import { CopyValue } from "@/components/CopyValue";
+import { CheckpointPanel } from "@/components/CheckpointPanel";
 import type { Verdict } from "@/lib/atf/types";
 
 interface AuditRecord {
@@ -240,6 +241,8 @@ export function AuditView() {
           ) : null}
         </div>
       </Panel>
+
+      <CheckpointPanel />
 
       <Panel
         title="Audit records"

@@ -68,7 +68,7 @@ traffic on boot. `/api/health` tells you which store is live.
 | `/console/attack-range` | Run an adversary (forged identity, replay, revoked key, capability escalation, rate flood, off-baseline behaviour, prompt injection, credential exfiltration) through the real decision path and watch the verdict |
 | `/console/agents` | The enrolled fleet, with live external threat intel per origin address |
 | `/console/tuning` | Move signal weights and thresholds and preview what that would have done to recent traffic. Sandboxed to your browser — it never changes anyone else's scoring, and cannot disable a hard rule |
-| `/console/audit` | The hash-chained audit log and a live tamper check |
+| `/console/audit` | The hash-chained audit log, a live tamper check, and fingerprints you can save to catch a later rewrite |
 | `/glossary` | Every term in plain language |
 
 ### Calling it as an agent
@@ -153,6 +153,8 @@ A BLOCK on the plaintext path returns HTTP 403.
 | `/api/gateway/intercept` | POST | Submit a call for a decision |
 | `/api/traffic` | GET | Recent decisions and a summary |
 | `/api/audit`, `/api/audit/verify` | GET | Audit log; chain verification |
+| `/api/audit/checkpoint` | GET | A signed fingerprint (seq, hash, Ed25519 signature) of the log's head |
+| `/api/audit/verify?seq=…&hash=…` | GET | Is a saved fingerprint still part of the log? `consistent`, `rewritten`, `broken` or `unavailable` |
 | `/api/config` | GET / PUT / DELETE | Read, set or clear *your* risk-config sandbox |
 | `/api/config/preview` | POST | Re-score recent traffic against a proposed config |
 | `/api/simulate` | GET / POST | List or run attack-range scenarios |

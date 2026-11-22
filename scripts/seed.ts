@@ -37,7 +37,10 @@ await seedDemoWorld(gateway);
 
 const agents = await gateway.store.listAgents();
 const events = await gateway.store.listEvents(500);
-const chain = verifyChain(await gateway.store.listAudit(2000));
+const recent = await gateway.store.listAudit(2000);
+const chain = verifyChain(recent, {
+  window: (await gateway.store.auditLength()) > recent.length,
+});
 
 process.stdout.write(
   `seeded in ${((Date.now() - started) / 1000).toFixed(1)}s\n` +

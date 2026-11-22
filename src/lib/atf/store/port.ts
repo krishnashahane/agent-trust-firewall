@@ -29,6 +29,8 @@ export interface Store {
   // audit
   appendAudit(record: AuditRecord): Promise<void>;
   listAudit(limit: number): Promise<AuditRecord[]>;
+  /** records with seq >= fromSeq, ascending, at most `limit` */
+  auditFrom(fromSeq: number, limit: number): Promise<AuditRecord[]>;
   auditHead(): Promise<AuditRecord | null>;
   auditLength(): Promise<number>;
 }

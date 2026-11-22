@@ -211,6 +211,15 @@ export class PostgresStore implements Store {
     return rows.map((r) => r.data);
   }
 
+  async auditFrom(fromSeq: number, limit: number): Promise<AuditRecord[]> {
+    const capped = Math.min(5000, Math.max(0, limit));
+    const rows = (await sql()`
+      SELECT data FROM atf_audit WHERE seq >= ${asEpoch(fromSeq)}
+      ORDER BY seq ASC LIMIT ${capped}
+    `) as { data: AuditRecord }[];
+    return rows.map((r) => r.data);
+  }
+
   async auditHead(): Promise<AuditRecord | null> {
     const rows = (await sql()`
       SELECT data FROM atf_audit ORDER BY seq DESC LIMIT 1

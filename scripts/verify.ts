@@ -20,7 +20,8 @@ import {
   open,
 } from "../src/lib/atf/crypto/e2ee.ts";
 import { sealField, openField } from "../src/lib/atf/crypto/sealed.ts";
-import { verifyChain, hashRecord } from "../src/lib/atf/audit/chain.ts";
+import { checkConsistency, linkRecord, verifyChain, hashRecord, type AuditRecord } from "../src/lib/atf/audit/chain.ts";
+import { signCheckpoint, verifyCheckpointSignature } from "../src/lib/atf/audit/checkpoint.ts";
 import { capabilityRoot, proveCapability } from "../src/lib/atf/identity/merkle.ts";
 import { isPublicIpv4 } from "../src/lib/atf/osint/net.ts";
 import { intelSignal } from "../src/lib/atf/risk/signals/intel.ts";
@@ -299,6 +300,26 @@ async function main(): Promise<void> {
 
     const truncated = records.slice(0, 5).concat(records.slice(6));
     assert("deleting a record is detected", !verifyChain(truncated).valid);
+
+    // An operator with database access rewrites history from record 2 and
+    // recomputes every hash. The chain alone cannot tell; a checkpoint can.
+    const saved = { seq: records[4]!.seq, hash: records[4]!.hash };
+    const rewritten: AuditRecord[] = records.slice(0, 2);
+    for (const record of records.slice(2)) {
+      const { seq: _s, hash: _h, previousHash: _p, id, ...input } = record;
+      rewritten.push(linkRecord({ ...input, score: input.score + 1 }, rewritten.at(-1) ?? null, id));
+    }
+    assert(
+      "a full rewrite with every hash recomputed is caught by a saved checkpoint",
+      verifyChain(rewritten).valid &&
+        checkConsistency(rewritten.slice(4), saved).status === "rewritten",
+    );
+    const checkpoint = signCheckpoint(records.at(-1)!, "cd".repeat(32));
+    assert(
+      "checkpoints are signed, and an edited checkpoint fails verification",
+      verifyCheckpointSignature(checkpoint) &&
+        !verifyCheckpointSignature({ ...checkpoint, seq: checkpoint.seq - 1 }),
+    );
   }
 
   // ------------------------------------------------------------ no leaks
