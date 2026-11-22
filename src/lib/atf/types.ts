@@ -116,6 +116,8 @@ export interface TrafficEvent {
   violations: PolicyViolation[];
   explanation: string;
   sealedFieldCount: number;
+  /** each signal's 0-1 reading, so the tuning preview can re-weigh the call */
+  signals?: Record<string, number>;
   /** the capability this call proved, when its Merkle proof verified */
   capability?: string;
   /** threat labels from live external intel, empty when none applied */

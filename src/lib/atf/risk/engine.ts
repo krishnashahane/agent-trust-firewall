@@ -25,27 +25,40 @@ export function bandFor(score: number): RiskBand {
   return "critical";
 }
 
-export function assess(
-  ctx: RequestContext,
-  config: RiskConfig = DEFAULT_RISK_CONFIG,
-): RiskAssessment {
+/**
+ * Weight signal readings into a 0-100 score. Shared by `assess` and by the
+ * tuning preview, which re-scores recorded readings under a proposed config —
+ * so a preview at the current config reproduces every recorded score exactly.
+ */
+export function weigh<T extends { id: string; score: number }>(
+  readings: readonly T[],
+  config: RiskConfig,
+): { score: number; contributions: (T & { weight: number; points: number })[] } {
   const weights = config.weights as Record<string, number | undefined>;
-
-  const results = SIGNALS.map((signal) => signal(ctx));
-  const totalWeight = results.reduce((sum, r) => sum + (weights[r.id] ?? 0), 0);
-
-  const contributions: SignalContribution[] = results.map((result) => {
-    const weight = weights[result.id] ?? 0;
+  const totalWeight = readings.reduce((sum, r) => sum + (weights[r.id] ?? 0), 0);
+  const contributions = readings.map((reading) => {
+    const weight = weights[reading.id] ?? 0;
     // Normalising by total weight keeps the score on a 0-100 scale no matter
     // how an operator has retuned the sliders.
-    const points = totalWeight > 0 ? (result.score * weight * 100) / totalWeight : 0;
-    return { ...result, weight, points: Number(points.toFixed(2)) };
+    const points = totalWeight > 0 ? (reading.score * weight * 100) / totalWeight : 0;
+    return { ...reading, weight, points: Number(points.toFixed(2)) };
   });
-
   const score = Math.min(
     100,
     Math.max(0, Number(contributions.reduce((sum, c) => sum + c.points, 0).toFixed(2))),
   );
+  return { score, contributions };
+}
+
+export function assess(
+  ctx: RequestContext,
+  config: RiskConfig = DEFAULT_RISK_CONFIG,
+): RiskAssessment {
+  const results = SIGNALS.map((signal) => signal(ctx));
+  const { score, contributions } = weigh(results, config) as {
+    score: number;
+    contributions: SignalContribution[];
+  };
 
   return {
     score,

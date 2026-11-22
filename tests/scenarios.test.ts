@@ -11,6 +11,7 @@ import { DEFAULT_RISK_CONFIG } from "@/lib/atf/risk/config";
 import { seedDemoWorld } from "@/lib/atf/demo/seed";
 import { runScenario, runSealedFieldDemo, SCENARIOS } from "@/lib/atf/demo/scenarios";
 import { verifyChain } from "@/lib/atf/audit/chain";
+import { previewTraffic, previewVerdict } from "@/lib/atf/risk/preview";
 import { openField } from "@/lib/atf/crypto/sealed";
 import { generateEncryptionKeyPair } from "@/lib/atf/crypto/e2ee";
 import type { Gateway } from "@/lib/atf/gateway";
@@ -181,5 +182,54 @@ describe("sealed-field demo", () => {
 describe("the audit chain survives an attack run", () => {
   it("is still unbroken after every scenario has executed", async () => {
     expect(verifyChain(await gateway.store.listAudit(2000)).valid).toBe(true);
+  });
+});
+
+describe("the tuning preview", () => {
+  it("reproduces every recorded verdict at the current config", async () => {
+    const gateway = await freshGateway();
+    for (const scenario of SCENARIOS) await runScenario(gateway, scenario.id);
+    const events = await gateway.store.listEvents(500);
+    const preview = previewTraffic(events, DEFAULT_RISK_CONFIG);
+    expect(preview.changed).toBe(0);
+    expect(preview.flagged).toBe(events.filter((e) => e.verdict === "FLAG").length);
+    expect(preview.flagged).toBeGreaterThan(0);
+  });
+
+  it("responds to the weight sliders, not only the thresholds", async () => {
+    const gateway = await freshGateway();
+    await runScenario(gateway, "healthy");
+    const [event] = await gateway.store.listEvents(1);
+    expect(event!.verdict).toBe("ALLOW");
+    const context = event!.signals!["context"]!;
+    expect(context).toBeGreaterThan(0);
+
+    // All weight on the context signal: the score becomes context * 100.
+    const contextOnly = {
+      weights: { identity: 0, context: 1, behavior: 0, rate: 0, payload: 0, reputation: 0, intel: 0 },
+      thresholds: { flag: Math.max(0, context * 100 - 1), block: 100 },
+    };
+    expect(previewVerdict(event!, contextOnly)).toBe("FLAG");
+    expect(previewVerdict(event!, DEFAULT_RISK_CONFIG)).toBe("ALLOW");
+  });
+
+  it("never lets a config undo a hard-rule block", async () => {
+    const gateway = await freshGateway();
+    await runScenario(gateway, "escalation");
+    const [event] = await gateway.store.listEvents(1);
+    const lenient = {
+      weights: { identity: 0, context: 0, behavior: 0, rate: 0, payload: 0, reputation: 0, intel: 1 },
+      thresholds: { flag: 100, block: 100 },
+    };
+    expect(previewVerdict(event!, lenient)).toBe("BLOCK");
+  });
+
+  it("keeps an escalated flag on events recorded before readings were stored", () => {
+    const legacy = {
+      id: "e", agentId: "a", agentName: "A", tool: "email.send", destination: "d",
+      verdict: "FLAG" as const, score: 12, band: "low" as const, topSignals: [], violations: [],
+      explanation: "", sealedFieldCount: 0, intelLabels: [], intelLive: false, timestamp: 0,
+    };
+    expect(previewVerdict(legacy, DEFAULT_RISK_CONFIG)).toBe("FLAG");
   });
 });

@@ -83,9 +83,9 @@ const ESCALATION_FLOORS: Readonly<Record<string, number>> = {
   behavior: 0.6,
 };
 
-export function escalations(
-  contributions: readonly SignalContribution[],
-): SignalContribution[] {
+export function escalations<T extends { id: string; score: number }>(
+  contributions: readonly T[],
+): T[] {
   return contributions.filter((c) => {
     const floor = ESCALATION_FLOORS[c.id];
     return floor !== undefined && c.score >= floor;
@@ -97,7 +97,7 @@ export function verdictFor(
   violations: readonly PolicyViolation[],
   score: number,
   config: RiskConfig,
-  contributions: readonly SignalContribution[] = [],
+  contributions: readonly { id: string; score: number }[] = [],
 ): Verdict {
   if (violations.length > 0) return "BLOCK";
   if (score >= config.thresholds.block) return "BLOCK";

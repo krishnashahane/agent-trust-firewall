@@ -292,7 +292,7 @@ CSP can carry a per-request nonce.
 ```bash
 npm run lint
 npm run typecheck
-npm run test           # 216 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
+npm run test           # 224 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
 npm run verify         # 30 security invariants, printed one per line
 npm run smoke          # end-to-end as a real agent against ATF_URL (default localhost:3000); needs ATF_ADMIN_TOKEN
 npm run build

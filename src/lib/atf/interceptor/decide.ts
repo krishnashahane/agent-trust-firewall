@@ -166,6 +166,7 @@ export async function decide(
       .map((c) => ({ id: c.id, label: c.label, points: c.points })),
     violations,
     explanation,
+    signals: Object.fromEntries(risk.contributions.map((c) => [c.id, c.score])),
     ...(capabilityProven ? { capability: request.capabilityProof.capability } : {}),
     sealedFieldCount: analysis.sealedFieldCount,
     intelLabels: opts.intel?.live ? opts.intel.labels : [],

@@ -145,7 +145,7 @@ npm run dev        # local dev
 npm run build      # production build
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm run test       # 216 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
+npm run test       # 224 tests: crypto, signals, engine, interceptor, audit, MCP, guards, scenarios, OSINT
 npm run verify     # 30 security invariants, asserted outside the test runner
 npm run mcp        # the MCP stdio server
 ```
